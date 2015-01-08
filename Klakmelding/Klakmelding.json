@@ -167,6 +167,24 @@
         "x" : 112170.55000000075,
         "y" : 516014.73999999836
       }
+    },
+    {
+      "attributes" : {
+        "OBJECTID" : 1,
+        "Melding" : 325220,
+        "Klant" : "Die ene gekkeboy, die zo hard gaat",
+        "PC" : "1811BE ",
+        "STRAAT" : "Ergens",
+        "NR" : "24",
+        "Toev" : null,
+        "Woonplaats" : "Alkmaar",
+        "Geregistreerd_op" : "14-11-2014 13:48",
+        "Door" : "Je boy Faberyeyo"
+      },
+      "geometry" : {
+        "x" : 112102.23999999836,
+        "y" : 515901.6799999997
+      }
     }
   ]
 }
