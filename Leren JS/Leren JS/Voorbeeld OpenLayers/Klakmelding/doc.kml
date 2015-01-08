@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://www.opengis.net/kml/2.2 http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd http://www.google.com/kml/ext/2.2 http://code.google.com/apis/kml/schema/kml22gx.xsd">
+<Document id="Klakmelding">
+  <name>Klakmelding</name>
+  <Snippet></Snippet>
+  <Folder id="FeatureLayer0">
+    <name>Klakmelding</name>
+    <Snippet></Snippet>
+    <Placemark id="ID_00000">
+      <name>F. Timmer</name>
+      <Snippet></Snippet>
+      <description><![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+<head>
+<META http-equiv="Content-Type" content="text/html">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body style="margin:0px 0px 0px 0px;overflow:auto;background:#FFFFFF;">
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">
+<tr style="text-align:center;font-weight:bold;background:#9CBCE2">
+<td>F. Timmer</td>
+</tr>
+<tr>
+<td>
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-spacing:0px; padding:3px 3px 3px 3px">
+<tr>
+<td>SHAPE</td>
+<td>Point</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Melding</td>
+<td>325220</td>
+</tr>
+<tr>
+<td>Klant</td>
+<td>F. Timmer</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>PC</td>
+<td>1811BE</td>
+</tr>
+<tr>
+<td>STRAAT</td>
+<td>Verdronkenoord</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>NR.</td>
+<td>24</td>
+</tr>
+<tr>
+<td>Toev.</td>
+<td>&lt;Null&gt;</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Woonplaats</td>
+<td>Alkmaar</td>
+</tr>
+<tr>
+<td>Geregistreerd op</td>
+<td>14-11-2014 13:48</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>door</td>
+<td>Carlos Monteiro</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+]]></description>
+      <styleUrl>#IconStyle00</styleUrl>
+      <Point>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates> 4.753600716063549,52.62892992050661,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark id="ID_00001">
+      <name>J. van der Zwan</name>
+      <Snippet></Snippet>
+      <description><![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+<head>
+<META http-equiv="Content-Type" content="text/html">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body style="margin:0px 0px 0px 0px;overflow:auto;background:#FFFFFF;">
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">
+<tr style="text-align:center;font-weight:bold;background:#9CBCE2">
+<td>J. van der Zwan</td>
+</tr>
+<tr>
+<td>
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-spacing:0px; padding:3px 3px 3px 3px">
+<tr>
+<td>SHAPE</td>
+<td>Point</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Melding</td>
+<td>325217</td>
+</tr>
+<tr>
+<td>Klant</td>
+<td>J. van der Zwan</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>PC</td>
+<td>1811NJ</td>
+</tr>
+<tr>
+<td>STRAAT</td>
+<td>Bierkade</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>NR.</td>
+<td>12</td>
+</tr>
+<tr>
+<td>Toev.</td>
+<td>&lt;Null&gt;</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Woonplaats</td>
+<td>Alkmaar</td>
+</tr>
+<tr>
+<td>Geregistreerd op</td>
+<td>14-11-2014 13:49</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>door</td>
+<td>Frans van der Heijde</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+]]></description>
+      <styleUrl>#IconStyle00</styleUrl>
+      <Point>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates> 4.755144678063537,52.62915266571359,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark id="ID_00002">
+      <name>K. Hoedjes</name>
+      <Snippet></Snippet>
+      <description><![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+<head>
+<META http-equiv="Content-Type" content="text/html">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body style="margin:0px 0px 0px 0px;overflow:auto;background:#FFFFFF;">
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">
+<tr style="text-align:center;font-weight:bold;background:#9CBCE2">
+<td>K. Hoedjes</td>
+</tr>
+<tr>
+<td>
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-spacing:0px; padding:3px 3px 3px 3px">
+<tr>
+<td>SHAPE</td>
+<td>Point</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Melding</td>
+<td>325218</td>
+</tr>
+<tr>
+<td>Klant</td>
+<td>K. Hoedjes</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>PC</td>
+<td>1811NJ</td>
+</tr>
+<tr>
+<td>STRAAT</td>
+<td>Bierkade</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>NR.</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Toev.</td>
+<td>&lt;Null&gt;</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Woonplaats</td>
+<td>Alkmaar</td>
+</tr>
+<tr>
+<td>Geregistreerd op</td>
+<td>14-11-2014 13:51</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>door</td>
+<td>Roy de Weers</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+]]></description>
+      <styleUrl>#IconStyle00</styleUrl>
+      <Point>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates> 4.755105423854864,52.62910913826716,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark id="ID_00003">
+      <name>S. Janssen</name>
+      <Snippet></Snippet>
+      <description><![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+<head>
+<META http-equiv="Content-Type" content="text/html">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body style="margin:0px 0px 0px 0px;overflow:auto;background:#FFFFFF;">
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">
+<tr style="text-align:center;font-weight:bold;background:#9CBCE2">
+<td>S. Janssen</td>
+</tr>
+<tr>
+<td>
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-spacing:0px; padding:3px 3px 3px 3px">
+<tr>
+<td>SHAPE</td>
+<td>Point</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Melding</td>
+<td>325215</td>
+</tr>
+<tr>
+<td>Klant</td>
+<td>S. Janssen</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>PC</td>
+<td>1811MT</td>
+</tr>
+<tr>
+<td>STRAAT</td>
+<td>Luttik Oudorp</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>NR.</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Toev.</td>
+<td>&lt;Null&gt;</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Woonplaats</td>
+<td>Alkmaar</td>
+</tr>
+<tr>
+<td>Geregistreerd op</td>
+<td>14-11-2014 13:56</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>door</td>
+<td>Jan van de Berg</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+]]></description>
+      <styleUrl>#IconStyle00</styleUrl>
+      <Point>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates> 4.755386777299444,52.62968653942642,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark id="ID_00004">
+      <name>J. Kraandijk</name>
+      <Snippet></Snippet>
+      <description><![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+<head>
+<META http-equiv="Content-Type" content="text/html">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body style="margin:0px 0px 0px 0px;overflow:auto;background:#FFFFFF;">
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">
+<tr style="text-align:center;font-weight:bold;background:#9CBCE2">
+<td>J. Kraandijk</td>
+</tr>
+<tr>
+<td>
+<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-spacing:0px; padding:3px 3px 3px 3px">
+<tr>
+<td>SHAPE</td>
+<td>Point</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Melding</td>
+<td>325215</td>
+</tr>
+<tr>
+<td>Klant</td>
+<td>J. Kraandijk</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>PC</td>
+<td>1811MT</td>
+</tr>
+<tr>
+<td>STRAAT</td>
+<td>Luttik Oudorp</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>NR.</td>
+<td>39</td>
+</tr>
+<tr>
+<td>Toev.</td>
+<td>&lt;Null&gt;</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>Woonplaats</td>
+<td>Alkmaar</td>
+</tr>
+<tr>
+<td>Geregistreerd op</td>
+<td>14-11-2014 13:48</td>
+</tr>
+<tr bgcolor="#D4E4F3">
+<td>door</td>
+<td>Dirk Bol</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+</body>
+</html>
+]]></description>
+      <styleUrl>#IconStyle00</styleUrl>
+      <Point>
+        <altitudeMode>clampToGround</altitudeMode>
+        <coordinates> 4.754609617423925,52.62996038360643,0</coordinates>
+      </Point>
+    </Placemark>
+  </Folder>
+  <Style id="IconStyle00">
+    <IconStyle>
+      <Icon><href>Layer0_Symbol_105d3fd8_0.png</href></Icon>
+      <scale>0.750000</scale>
+    </IconStyle>
+    <LabelStyle>
+      <color>00000000</color>
+      <scale>0.000000</scale>
+    </LabelStyle>
+    <PolyStyle>
+      <color>ff000000</color>
+      <outline>0</outline>
+    </PolyStyle>
+  </Style>
+</Document>
+</kml>
