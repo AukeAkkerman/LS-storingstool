@@ -22,7 +22,7 @@ var image = new ol.style.Circle({
   stroke: new ol.style.Stroke({color: 'red', width: 1})
 });
 
-
+//halloooooo
 
 var styles = {
   'Point': [new ol.style.Style({
