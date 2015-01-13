@@ -1,0 +1,99 @@
+{
+  "displayFieldName" : "",
+  "fieldAliases" : {
+    "OBJECTID" : "OBJECTID",
+    "Name" : "Name",
+    "time" : "time",
+    "tweet" : "tweet",
+    "origineel" : "origineel"
+  },
+  "geometryType" : "esriGeometryPoint",
+  "spatialReference" : {
+    "wkt" : "PROJCS[\"RD_New\",GEOGCS[\"GCS_Amersfoort\",DATUM[\"D_Amersfoort\",SPHEROID[\"Bessel_1841\",6377397.155,299.1528128]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Double_Stereographic\"],PARAMETER[\"False_Easting\",155000000.0],PARAMETER[\"False_Northing\",463000000.0],PARAMETER[\"Central_Meridian\",5.38763888888889],PARAMETER[\"Scale_Factor\",0.9999079],PARAMETER[\"Latitude_Of_Origin\",52.15616055555555],UNIT[\"Millimeter\",0.001]]"
+  },
+  "fields" : [
+    {
+      "name" : "OBJECTID",
+      "type" : "esriFieldTypeOID",
+      "alias" : "OBJECTID"
+    },
+    {
+      "name" : "Name",
+      "type" : "esriFieldTypeString",
+      "alias" : "Name",
+      "length" : 60
+    },
+    {
+      "name" : "time",
+      "type" : "esriFieldTypeDate",
+      "alias" : "time",
+      "length" : 8
+    },
+    {
+      "name" : "tweet",
+      "type" : "esriFieldTypeString",
+      "alias" : "tweet",
+      "length" : 255
+    },
+    {
+      "name" : "origineel",
+      "type" : "esriFieldTypeString",
+      "alias" : "origineel",
+      "length" : 255
+    }
+  ],
+  "features" : [
+    {
+      "attributes" : {
+        "OBJECTID" : 1,
+        "Name" : "Tim",
+        "time" : 1416268800000,
+        "tweet" : "Stroom uitgevallen tijdens voorstelling",
+        "origineel" : "https://abs.twimg.com/favicons/favicon.ico"
+      },
+      "geometry" : {
+        "x" : 112137593.09999847,
+        "y" : 515884294.59999847
+      }
+    },
+    {
+      "attributes" : {
+        "OBJECTID" : 2,
+        "Name" : "Auke",
+        "time" : 1416268800000,
+        "tweet" : "Tjeempie, storing #liander #hetisweerraak",
+        "origineel" : "https://abs.twimg.com/favicons/favicon.ico"
+      },
+      "geometry" : {
+        "x" : 112201229.09999847,
+        "y" : 516000353.09999847
+      }
+    },
+    {
+      "attributes" : {
+        "OBJECTID" : 3,
+        "Name" : "Jeroen",
+        "time" : 1416268800000,
+        "tweet" : "Vroeg de kroeg in, geen stroom bij voorstelling",
+        "origineel" : "https://abs.twimg.com/favicons/favicon.ico"
+      },
+      "geometry" : {
+        "x" : 112134509.40000153,
+        "y" : 515884294.59999847
+      }
+    },
+    {
+      "attributes" : {
+        "OBJECTID" : 4,
+        "Name" : "Patrick",
+        "time" : 1416268800000,
+        "tweet" : "#Storing #theater",
+        "origineel" : "https://abs.twimg.com/favicons/favicon.ico"
+      },
+      "geometry" : {
+        "x" : 112138994.79999924,
+        "y" : 515873641.90000153
+      }
+    }
+  ]
+}
