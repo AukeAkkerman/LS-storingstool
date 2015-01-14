@@ -143,18 +143,18 @@ var Thiessen = new ol.layer.Vector({
    source: new ol.source.GeoJSON({
         url: 'data/Thiessen.GeoJSON',
         defaultProjection: 'EPSG:3857',
-        projection: 'EPSG:3857'
+        projection: 'EPSG:3857',
+        
    }),
-  style: styleFunction 
+  style: styleFunction,
+  visible: false
 });
 
 var raster = new ol.layer.Tile({
-  source: new ol.source.Stamen({
-  layer: 'watercolor'
-  })
-});
-
-
+      source: new ol.source.Stamen({
+        layer: 'toner'
+      })
+    })
 
 var map = new ol.Map({
     target: 'map',
@@ -163,7 +163,6 @@ var map = new ol.Map({
 });
 
 //Stuk hieronder is voor de tooltips
-
 var info = $('#info');
 info.tooltip({
   animation: false,
@@ -189,13 +188,35 @@ var displayFeatureInfo = function(pixel) {
   }
 };
 
-$(map.getViewport()).on('mousemove', function(evt) {
+//defineren van een Click
+$(map.getViewport()).on('click', function(evt) {
   displayFeatureInfo(map.getEventPixel(evt.originalEvent));
 });
 
+
+/*
 map.on('click', function(evt) {
   displayFeatureInfo(evt.pixel);
 });
+*/
+
+//boxje met info
+
+var displayFeatureInfo = function(pixel) {
+var feature = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+    return feature;
+  });
+
+
+  var info2 = document.getElementById('info');
+  if (feature) {
+    info2.innerHTML = 'Aangemeld door: ' + feature.get('Door') + ' | Klantnaam ' + feature.get('Klant');
+      var Tijgerklant = feature.get('Klant');
+  } else {
+    info2.innerHTML = '&nbsp;';
+  }
+
+};
 
 // Handle visibility control
 
@@ -219,16 +240,16 @@ $(document).ready(function() {
 
 $(document).ready(function() {
     $("#toggle-thiessen-laag").on('click', function() {
-        Thiessen.setVisible(!Thiessen.getVisible());
+        alert('We gaan die storing van ' + Tijgerklant + ' eens even voor je analyseren, penis');
     });
 }); 
 
 // Handle on-click functionality
 
-var selectClick = new ol.interaction.Select({
+/*var selectClick = new ol.interaction.Select({
   condition: ol.events.condition.click
 });
-map.addInteraction(selectClick);
+map.addInteraction(selectClick);*/
 
 // Display interactivity in the map
 // Hoe selecteer je gegevens uit een JSON bestand?
