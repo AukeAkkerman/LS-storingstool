@@ -16,12 +16,13 @@ var view = new ol.View({
     zoom: 17,
     projection: projection
 });
+//algemene definitie van de style voor tweets
 var image = new ol.style.Circle({
   radius: 5,
   fill: new ol.style.Fill({
-    color: 'rgba(255,0,0,1)'
+    color: 'rgba(30,200,100,0.6)'
   }),
-  stroke: new ol.style.Stroke({color: 'red', width: 1})
+  stroke: new ol.style.Stroke({color: 'green', width: 1})
 });
 
 var styles = {
@@ -32,8 +33,8 @@ var styles = {
   })],
   'LineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'green',
-      width: 1
+      color: 'rgba(200,50,50,0.8)',
+      width: 2
     })
   })],
   'MultiLineString': [new ol.style.Style({
@@ -90,7 +91,7 @@ var styles = {
     })
   })]
 };
-
+//Styles voor de verschillende lagen
 var styleFunction = function(feature, resolution) {
   return styles[feature.getGeometry().getType()];
 };
@@ -100,25 +101,52 @@ var styleFunction = function(feature, resolution) {
 var styleFunctionT = function(feature, resolution) {
   return stylesT[feature.getGeometry().getType()];
 };
-
+//definitie stylesT
 var stylesT = {
   'Point': [new ol.style.Style({
     image: image
   })]
 };
-
+//Klakmeldingen inladen
 var vectorSourceKLAK = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/KLAK.GeoJSON'
 });
+//Kabels inladen
+var vectorSourceKabels = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/NRG_LS_Kabels.GeoJSON'
+});
+//Aansluitingen inladen
+var vectorSourceAansl = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/Aansluitingen_inclslim.GeoJSON'
+});
 
+
+//Klakmeldingen projecteren
 var KLAKLayer = new ol.layer.Vector({
   source: vectorSourceKLAK,
   projection: 'EPSG:4326',
   style: styleFunction  
 });
+//Kabels projecteren
+var KabelLayer = new ol.layer.Vector({
+  source: vectorSourceKabels,
+  projection: 'EPSG:4326',
+  style: styleFunction,
+  maxResolution: '1'
+});
 
+//Aansluitingen projecteren
+var AanslLayer = new ol.layer.Vector({
+  source: vectorSourceAansl,
+  projection: 'EPSG:4326',
+  style: styleFunctionT,
+  maxResolution: '2'    
+});
 
+//tweets laden en projecteren
 var TweetsLayer = new ol.layer.Vector({
   source: new ol.source.GeoJSON({
         url: 'data/Tweet.GeoJSON',
@@ -128,7 +156,7 @@ var TweetsLayer = new ol.layer.Vector({
     style: styleFunctionT 
 });
 
-    
+//Klic laden en projecteren    
 var KlicLayer = new ol.layer.Vector({
    source: new ol.source.GeoJSON({
         url: 'data/KliCAlkmaar.GeoJSON.txt',
@@ -138,7 +166,7 @@ var KlicLayer = new ol.layer.Vector({
   style: styleFunction 
 });
 
-
+//Thiessen polygonen van aansluitingen laden en projecteren
 var Thiessen = new ol.layer.Vector({
    source: new ol.source.GeoJSON({
         url: 'data/Thiessen.GeoJSON',
@@ -158,7 +186,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, KLAKLayer, TweetsLayer, KlicLayer, Thiessen],
+    layers: [raster, KabelLayer, AanslLayer, KLAKLayer, TweetsLayer, KlicLayer, Thiessen],
     view: view
 });
 
@@ -185,6 +213,18 @@ var displayFeatureInfo = function(pixel) {
         .tooltip('show');
   } else {
     info.tooltip('hide');
+  }
+};
+//toevoegen van selectiekader
+var select = null;
+var selectMouseMove = new ol.interaction.Select({
+  condition: ol.events.condition.MouseMove
+});
+map.addInteraction(selectMouseMove);
+
+var changeInteraction = function() {
+  if (select !== null) {
+    map.removeInteraction(select);
   }
 };
 
