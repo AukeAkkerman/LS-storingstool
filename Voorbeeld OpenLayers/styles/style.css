@@ -6,7 +6,7 @@
 
 
 html{
-    margin-left:0px;
+    margin-left:8px;
 }
 
  .bs-example{
@@ -16,8 +16,8 @@ html{
 #map {
     padding: 10px;
     margin-left:0px;
-    width: 80%;
-    height: 600px;
+    width: 900px;
+    height: 550px;
 }
 
 .dropdown-submenu {
@@ -68,24 +68,46 @@ html{
     border-radius: 6px 0 6px 6px;
 }
 
-table {
-    width:80%;
+table#t01 {
+    width:100%;
 }
+
+table#t02 {
+    width:250px;
+    text-align: left;
+    vertical-align: top;
+}
+
 table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
+    vertical-align: top;
 }
-th, td {
+th#t01, td#t01 {
+    height: auto;
+    width: auto;
     padding: 5px;
     text-align: left;
+    vertical-align: top;
 }
-table#t01 tr:nth-child(even) {
+
+th#t02, td#t02 {
+    height: auto;
+    width: 125px;
+    padding: 5px;
+    text-align: left;
+    vertical-align: top;
+}
+
+table#t02 td:nth-child(even) {
     background-color: #eee;
 }
-table#t01 tr:nth-child(odd) {
+table#t02 td:nth-child(odd) {
    background-color:#fff;
 }
 table#t01 th	{
     background-color: black;
     color: white;
 }
+
+

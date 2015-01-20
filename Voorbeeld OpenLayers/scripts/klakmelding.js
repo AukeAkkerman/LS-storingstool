@@ -16,7 +16,7 @@ var view = new ol.View({
     zoom: 17,
     projection: projection
 });
-//algemene definitie van de style voor tweets
+//algemene definitie van de style voor LS aansluitingen
 var image = new ol.style.Circle({
   radius: 5,
   fill: new ol.style.Fill({
@@ -25,6 +25,14 @@ var image = new ol.style.Circle({
   stroke: new ol.style.Stroke({color: 'green', width: 1})
 });
 
+//definitie stylesT
+var stylesT = {
+  'Point': [new ol.style.Style({
+    image: image
+  })]
+};
+
+//algemene definitie LS kabels en KLAK meldingen
 var styles = {
   'Point': [new ol.style.Style({
     image: new ol.style.Icon(({
@@ -91,38 +99,95 @@ var styles = {
     })
   })]
 };
+
+//stijl voor MSkabels
+var stylesMS = {
+    'LineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(50,130,200,0.8)',
+      width: 3
+    })
+    })]
+
+};
+    
+
 //Styles voor de verschillende lagen
 var styleFunction = function(feature, resolution) {
   return styles[feature.getGeometry().getType()];
 };
 
 //Aparte functie voor Tweet styles
-
 var styleFunctionT = function(feature, resolution) {
   return stylesT[feature.getGeometry().getType()];
 };
-//definitie stylesT
-var stylesT = {
-  'Point': [new ol.style.Style({
-    image: image
-  })]
+
+//definitieve styles van  MS gedeelte
+var styleFunctionMS = function(feature, resolution) {
+  return stylesMS[feature.getGeometry().getType()];
 };
+
+
 //Klakmeldingen inladen
 var vectorSourceKLAK = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/KLAK.GeoJSON'
 });
-//Kabels inladen
-var vectorSourceKabels = new ol.source.GeoJSON({
+//LSKabels inladen
+var vectorSourceKabelsLS = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/NRG_LS_Kabels.GeoJSON'
 });
+
+//MSkabels inladen
+var vectorSourceKabelsMS = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/NRG_MS_Kabel_sel.GeoJSON'
+});
+
+// test met WFS importeren
+
+ // Source retrieving WFS data in GML format using AJAX
+            var vectorSource = new ol.source.ServerVector({
+                format: new ol.format.WFS({
+                    featureNS: 'http://esritst:6080/arcgis/services/DNB/storingintake/MapServer/WFSServer',
+                    featureType: 'MV_NRG_MS_KABELS'
+                }),
+                loader: function(extent, resolution, projection) {
+                    var url = 'http://esritst:6080/arcgis/services/DNB/storingintake/MapServer/WFSServer?'+
+                        'service=WFS&request=GetFeature&'+
+                        'version=1.1.0&typename=DNB_storingintake:MV_NRG_MS_KABELS&'+
+                        'srsname=EPSG:3857';
+
+                    $.ajax({
+                        url: url
+                    })
+                    .done(function(response) {
+                        vectorSource.addFeatures(vectorSource.readFeatures(response));
+                    });
+                },
+                strategy: ol.loadingstrategy.createTile(new ol.tilegrid.XYZ({
+                    maxZoom: 19
+                })),
+                projection: 'EPSG:3857'
+            });
+
+            // Vector layer
+            var vector = new ol.layer.Vector({
+                source: vectorSource,
+                style: new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'green',
+                        width: 2
+                    })
+                })
+            });
+
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/Aansluitingen_inclslim.GeoJSON'
 });
-
 
 //Klakmeldingen projecteren
 var KLAKLayer = new ol.layer.Vector({
@@ -130,12 +195,20 @@ var KLAKLayer = new ol.layer.Vector({
   projection: 'EPSG:4326',
   style: styleFunction  
 });
-//Kabels projecteren
-var KabelLayer = new ol.layer.Vector({
-  source: vectorSourceKabels,
+//LS Kabels projecteren
+var KabelLayerLS = new ol.layer.Vector({
+  source: vectorSourceKabelsLS,
   projection: 'EPSG:4326',
   style: styleFunction,
   maxResolution: '1'
+});
+
+//MS Kabels projecteren
+var KabelLayerMS = new ol.layer.Vector({
+  source: vectorSourceKabelsMS,
+  projection: 'EPSG:4326',
+  style: styleFunctionMS,
+  maxResolution: '4'
 });
 
 //Aansluitingen projecteren
@@ -186,7 +259,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, KabelLayer, AanslLayer, KLAKLayer, TweetsLayer, KlicLayer, Thiessen],
+    layers: [raster, vector, KabelLayerLS, AanslLayer, KabelLayerMS, KLAKLayer, TweetsLayer, KlicLayer, Thiessen],
     view: view
 });
 
@@ -250,8 +323,7 @@ var feature = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
 
   var info2 = document.getElementById('info');
   if (feature) {
-    info2.innerHTML = 'Aangemeld door: ' + feature.get('Door') + ' | Klantnaam ' + feature.get('Klant');
-      var Tijgerklant = feature.get('Klant');
+    info2.innerHTML = feature.get('Door');
   } else {
     info2.innerHTML = '&nbsp;';
   }
@@ -278,11 +350,7 @@ $(document).ready(function() {
     });
 }); 
 
-$(document).ready(function() {
-    $("#toggle-thiessen-laag").on('click', function() {
-        alert('We gaan die storing van ' + Tijgerklant + ' eens even voor je analyseren, penis');
-    });
-}); 
+
 
 // Handle on-click functionality
 
