@@ -25,15 +25,14 @@
                   <ul class="dropdown-menu">
                     <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">LS</a>
                       <ul class="dropdown-menu">
-                        <li><a href="#" tabindex="-1" id="toggle-ls-aansl">LS Aansluitingen</a></li>
-                        <li><a href="#" tabindex="-1" id="toggle-ls-kabels">LS Kabels</a></li>
+                        <li><a href="#" tabindex="-1">LS Kabels</a></li>
                         <li><a href="#" tabindex="-1">LS Schakelkasten</a></li>
                       </ul>
                     </li>
                     <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">MS</a>
                       <ul class="dropdown-menu">
-                        <li><a href="#" tabindex="-1" id="toggle-ms-kabels">MS Kabels</a></li>
-                        <li><a href="#" tabindex="-1" id="toggle-ls-aansl">MSR</a></li>
+                        <li><a href="#" tabindex="-1">MS Kabels</a></li>
+                        <li><a href="#" tabindex="-1">MSR</a></li>
                         <li><a href="#" tabindex="-1">BehuizingNR</a></li>
                       </ul>
                     </li>
@@ -110,7 +109,7 @@
                     <li><a href="#" tabindex="-1">Historie Werkzaamheden</a></li>
                   </ul>
                 </li>
-                <li><a href="#" tabindex="-1" id="export-png">Download kaart</a></li>
+                <li><a href="#" tabindex="-1">Stuur storingsgegevens naar monteur</a></li>
                 <li><a href="#" tabindex="-1">Teamleiders Monteurs</a></li>
               </ul>
         </li>
@@ -134,15 +133,46 @@
           </ul>
     </div>
    
-  
-<div id="map"><div id="info"></div></div>
+<div id="wrapper">
+    
+    <table id="t01" align = "left">
+  <tr>
+    <th>Naam Monteur</th>
+    <th>Bevoegdheden</th>		
+    <th>Toegekend aan?</th>
+    <th>Huidige Locatie Monteur</th>
+  </tr>
+  <tr>
+    <td>Ron de Graaff</td>
+    <td>Niveau 1</td>
+    <td>Geen Werkzaamheden, oproepbaar</td>
+    <td>Heiloo, Nieuweweg</td>
+  </tr>
+  <tr>
+    <td>Jan Boterwaag</td>	
+    <td>Niveau 4</td>	
+    <td>Geen Werkzaamheden, oproepbaar</td>	
+    <td>Den Helder, Middenweg</td>
+    
+  </tr>
+  <tr>
+    <td>Bert Huiberts</td>
+	<td>Niveau 5</td>
+    <td>Aan het werken aan melding 200888</td>
+    <td>Alkmaar, Strooijonkerstraat</td>
+  </tr>
+</table>
+    <br>
+    <br>
+    
 
-<div id="here_table"></div>
+    <div id="map"><div id="info"></div><div id="info2"></div></div>
+
+</div>
+
 
     <script src="http://openlayers.org/en/v3.1.1/build/ol.js"></script>
     <script src="scripts/klakmelding.js"></script>
 
 </body>
 </html>
-
-
