@@ -416,6 +416,7 @@ selectMouseClick.getFeatures().on("change:length", function () {
 });
 
 $(map.getViewport()).on('click', function(evt) {
+    select = null;
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
     $('#here_table').empty()
@@ -464,6 +465,68 @@ $(document).ready(function() {
     $("#toggle-ls-aansl").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
     });
+    
+    $("#klak-naar-monteur").on('click', function(){
+       if(selectMouseClick) {
+           var ExtentArray = [];
+           var FeatureArray = [];
+           for (var i=0; i< selectMouseClick.getFeatures().getLength(); j++) {
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(i);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+               //Find corresponding name in other layer
+                    for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
+                
+                        var feature = vectorSourceAansl.getFeatures()[i];
+                        if (feature.get("ARI_ADRES") == ARI) {
+                            var HLD_tevinden = feature.get("HOOFDLEIDING");
+                            //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
+                            for (var j=0; j< vectorSourceKabels.getFeatures().length; j++) {
+                    
+                                var KabelID = vectorSourceKabels.getFeatures()[j];
+                                if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(KabelID.getGeometry().getExtent());
+                                    FeatureArray.push(KabelID);                            
+                                }
+                            }
+                            break;
+                        } 
+                    }
+            }
+           if (ExtentArray.length != 0) {
+               selectedSourceKabels.addFeatures(FeatureArray);
+               var pan = ol.animation.pan({
+                   duration: 1000,
+                   source: /** @type {ol.Coordinate} */ (view.getCenter())
+               });
+               map.beforeRender(pan);
+               var NewExtent = maxExtent(ExtentArray);
+               map.getView().fitExtent(NewExtent, map.getSize());
+            }
+           //Alle features zijn nu geselecteerd en er moet een nieuwe window worden geopend waarin alle informatie staat die kan worden verstuurd naar de monteur, hierin moet staan 1. Screenshot van storing, 2. alle informatie van de klanten die moet worden meeegegeven 3. Informatie over kabels&MSRen die moet worden meegegeven
+           var MonteurWindow = window.open("", "MonteurWindow");
+           //Plaatje toevoegen (als dit werkt)
+           //MonteurWindow.innerHTML = ;
+           //Vervolgens informatie over geselecteerde KLAK meldingen weergeven
+           MonteurWindow.document.write("<div id='monteur_info_tabel'></div>");
+           var InfoMonteurTabel = MonteurWindow.document.getElementById('monteur_info_tabel');
+           var content = "<table>"
+           content += "<tr><td><b>KLAK Melding </b></td></tr>"
+           content += "<tr><td>Naam Klant</td><td>Adres Klant</td><td>Telefoonnr. Klant</td><tr>"
+           for(var i=0; i < selectMouseClick.getFeatures().getLength(); i++){
+               var NaamMelder = selectMouseClick.getFeatures().item(i).get("Klant");
+               var AdresMelder = selectMouseClick.getFeatures().item(i).get("STRAAT") + ' ' +  selectMouseClick.getFeatures().item(i).get("NR");
+               content += "<tr><td> " + NaamMelder + " </td><td> " + AdresMelder + " </td><td> Onbekend </td></tr>";
+           }
+           //Nu voor alle kabels, dit kan via de FeatureArray waarin de kabel features in zijn opgeslagen
+           
+           content += "</table>"
+           InfoMonteurTabel.innerHTML = content;
+        } else {
+            window.alert("Selecteer eerst een of meerdere KLAK meldingen");
+        }
+    });
       
     //Achterliggende kabel tonen
     $('#toon-achterl-kabel').on('click', function(){
@@ -488,9 +551,7 @@ $(document).ready(function() {
                         if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
 //                            KabelID.set("type", "LineStringSelected");
                             ExtentArray.push(KabelID.getGeometry().getExtent());
-                            FeatureArray.push(KabelID);
-                            //Nu vervolgens de hele kabel inzoomen
-                            
+                            FeatureArray.push(KabelID);                            
                         }
 //                        else {
 //                            KabelID.set("type", "LineString");
@@ -575,13 +636,7 @@ $(document).ready(function() {
     });
     
     $('#Help').on('click', function(){
-       var content = "<table>"
-        for(i=0; i<3; i++){
-        content += '<tr><td>' + 'result ' +  i + '</td></tr>';
-        }
-        content += "</table>"
-
-        $('#here_table').append(content);
+        window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
         });
 
     //Slimme meters "pingen"
