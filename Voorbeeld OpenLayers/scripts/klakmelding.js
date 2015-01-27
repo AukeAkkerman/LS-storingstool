@@ -1,6 +1,11 @@
 //EERST ALLE HELPFUNCTIES DEFINIEEREN
 //Script om alle helpfuncties in klakmelding.js op te slaan, voor overzichtelijkheid
 
+function IsNumeric(input)
+{
+    return (input - 0) == input && (''+input).replace(/^\s+|\s+$/g, "").length > 0;
+}
+
 function myMax(a)
 {
     var m = -Infinity, i = 0, n = a.length;
@@ -396,9 +401,10 @@ map.addInteraction(selectMouseClick);
 $(map.getViewport()).on('click', function(evt) {
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
-    $('#here_table').empty()
-    if(overlay){
-        map.removeOverlay(overlay);
+    $('#here_table').empty();
+    //Deze onderstaande functie moet anders! De overlay zelf moet worden verwijderd en niet puur en alleen op de map, anders krijgen we een wildgroei aan overlays!
+    for(var i=0; i < map.getOverlays().getLength() ; i++){
+    map.removeOverlay(map.getOverlays().item(i));
     }
 });
 
@@ -444,6 +450,36 @@ $(document).ready(function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
     });
     
+    $("#ping-sm-afstand").on('click', function(){
+        if(selectMouseClick) {
+            var Afstand = prompt("Ping binnen welke afstand van de geselecteerde KLAK melding? (km)", 3);
+            if(IsNumeric(Afstand)){
+                var x = selectMouseClick.getFeatures().item(0).getGeometry().getExtent()[0];
+                var y = selectMouseClick.getFeatures().item(0).getGeometry().getExtent()[1];
+                var NumAfstand = 1000*Number(Afstand); //Afstand moet hier in meter worden gegeven
+                var extent = [x-NumAfstand, y-NumAfstand, x+NumAfstand, y+NumAfstand];
+//                var FocalFeature = selectMouseClick.getFeatures().item(0);
+                AanslLayer.getSource().forEachFeatureInExtent(extent, function(feature) {
+                    if (feature.get("SlimmeMeter") == 1){
+                                if (feature.get("PingTerug") == 1){
+                                    var coordinates = feature.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 1);
+                                    map.addOverlay(overlay);
+                                } else if (feature.get("PingTerug") == 0){
+                                    var coordinates = feature.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 0);
+                                    map.addOverlay(overlay);
+                                }
+                            }
+                        });
+            } else {
+                window.alert("Voer een getal in!");
+            } 
+            } else {
+            window.alert("Selecteer eerst een KLAK melding");
+        }
+    });
+    
     $("#klak-naar-monteur").on('click', function(){
        if(selectMouseClick) {
            var ExtentArray = [];
@@ -469,7 +505,7 @@ $(document).ready(function() {
                                 }
                             }
                             break;
-                        } 
+                        }
                     }
             }
            if (ExtentArray.length != 0) {
@@ -491,14 +527,20 @@ $(document).ready(function() {
            var InfoMonteurTabel = MonteurWindow.document.getElementById('monteur_info_tabel');
            var content = "<table>"
            content += "<tr><td><b>KLAK Melding </b></td></tr>"
-           content += "<tr><td>Naam Klant</td><td>Adres Klant</td><td>Telefoonnr. Klant</td><tr>"
+           content += "<tr><td><b>Naam Klant</td><td><b>Adres Klant</td><td><b>Telefoonnr. Klant</b></td></tr>"
            for(var i=0; i < selectMouseClick.getFeatures().getLength(); i++){
                var NaamMelder = selectMouseClick.getFeatures().item(i).get("Klant");
                var AdresMelder = selectMouseClick.getFeatures().item(i).get("STRAAT") + ' ' +  selectMouseClick.getFeatures().item(i).get("NR");
                content += "<tr><td> " + NaamMelder + " </td><td> " + AdresMelder + " </td><td> Onbekend </td></tr>";
            }
            //Nu voor alle kabels, dit kan via de FeatureArray waarin de kabel features in zijn opgeslagen
-           
+           content += "<tr><td><b>Hoofdleiding Nummer</td><td><b>Uitvoering</td><td><b>Lengte</td></b></tr>" 
+           for(var i = 0; i < FeatureArray.length; i++){
+               var KabelHld = FeatureArray[i].get("HOOFDLEIDING");
+               var KabelUitv = FeatureArray[i].get("UITVOERING_SCHETS"); 
+               var KabelLengte = FeatureArray[i].get("LIGGING_Length"); 
+               content += "<tr><td> " + KabelHld + " </td><td> " + KabelUitv + " </td><td> " +  KabelLengte + " </td></tr>";
+           }
            content += "</table>"
            InfoMonteurTabel.innerHTML = content;
         } else {
@@ -583,16 +625,10 @@ $(document).ready(function() {
                                 ExtentArray.push(AanslID.getGeometry().getExtent());
                                 FeatureArray.push(AanslID);
                             }
-    //                        else {
-    //                            KabelID.set("type", "LineString");
-    //                        }
                         }
                         break;
                         }
                     } 
-    //                    else {
-    //                    feature.set("type", "Point");
-    //                }
                 }
                 if (ExtentArray.length != 0) {
                 selectedSourceAansl.addFeatures(FeatureArray);
@@ -624,61 +660,42 @@ $(document).ready(function() {
     //Slimme meters "pingen"
     $('#ping-sm-aan-kabel').on('click', function(){
         if(selectMouseClick) {
-            //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-            var features = selectMouseClick.getFeatures();
-            var selectedFeature = features.item(0);
-            var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-//            window.alert(ARI);
-            //Find corresponding name in other layer
-            for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-                
-                var feature = vectorSourceAansl.getFeatures()[i];
-                if (feature.get("ARI_ADRES") == ARI) {
-                    var HLD_tevinden = feature.get("HOOFDLEIDING");
-                    //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                    var ExtentArray = [];
-                    for (var j=0; j< vectorSourceAansl.getFeatures().length; j++) {
-                    
-                        var AanslID = vectorSourceAansl.getFeatures()[j];
-                        if (AanslID.get("HOOFDLEIDING") == HLD_tevinden && AanslID.get("SlimmeMeter") == 1){
-                            if (AanslID.get("PingTerug") == 1){
-                                //AanslID.set("type", "AanslKabelPoint");
-                                ExtentArray.push(AanslID.getGeometry().getExtent());
-                                coordinates = AanslID.getGeometry().getCoordinates();
-                                overlay = createCircleOutOverlay(coordinates, 1);
-                                map.addOverlay(overlay);
-                            //Nu vervolgens de hele kabel inzoomen
-                            } else if (AanslID.get("PingTerug") == 1){
-                            //AanslID.set("type", "AanslKabelPoint");
-                            ExtentArray.push(AanslID.getGeometry().getExtent());
-                            coordinates = AanslID.getGeometry().getCoordinates();
-                            overlay = createCircleOutOverlay(coordinates, 1);
-                            map.addOverlay(overlay);
-                            //Nu vervolgens de hele kabel inzoomen
+            var SMArray = []
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+                //Find corresponding name in other layer
+                for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
+
+                    var feature = vectorSourceAansl.getFeatures()[i];
+                    if (feature.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = feature.get("HOOFDLEIDING");
+                        //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
+                        for (var j=0; j< vectorSourceAansl.getFeatures().length; j++) {
+
+                            var AanslID = vectorSourceAansl.getFeatures()[j];
+                            if (AanslID.get("HOOFDLEIDING") == HLD_tevinden && AanslID.get("SlimmeMeter") == 1){
+                                SMArray.push(j);
+                                if (AanslID.get("PingTerug") == 1){
+                                    var coordinates = AanslID.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 1);
+                                    map.addOverlay(overlay);
+                                } else if (AanslID.get("PingTerug") == 0){
+                                    var coordinates = AanslID.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 0);
+                                    map.addOverlay(overlay);
+                                }
+
                             }
-                            
                         }
-//                        else {
-//                            KabelID.set("type", "LineString");
-//                        }
-                    }
-                    if (ExtentArray.length != 0) {
-                        var pan = ol.animation.pan({
-                            duration: 1000,
-                            source: /** @type {ol.Coordinate} */ (view.getCenter())
-                        });
-                        map.beforeRender(pan);
-                        var NewExtent = maxExtent(ExtentArray);
-                        map.getView().fitExtent(NewExtent, map.getSize());
-                    }
-                    else if (ExtentArray.length == 0) {
-                    window.alert("Geen Slimme Meter op de kabel!")
-                    }
-                    break;
-                } 
-//                    else {
-//                    feature.set("type", "Point");
-//                }
+                        if (SMArray.length == 0) {
+                            window.alert("Geen Slimme Meter op de kabel!")
+                        }
+                        break;
+                    } 
+                }
             }
         } else {
          window.alert("You have not selected anything");
