@@ -34,7 +34,9 @@ html{
   }
   .tooltip-inner {
     border: 2px solid white;
+    white-space:pre-wrap;
   }
+
 
 /*Info2 Box*/
 
