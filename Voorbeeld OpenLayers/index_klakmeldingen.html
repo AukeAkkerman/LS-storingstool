@@ -148,3 +148,56 @@
 </html>
 
 
+<!--
+ $('#toon-achterl-kabel').on('click', function(){
+        if(selectMouseClick) {
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+                for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
+
+                    var feature = vectorSourceAansl.getFeatures()[i];
+                    if (feature.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = feature.get("HOOFDLEIDING");
+                        //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
+                        for (var j=0; j< vectorSourceKabels.getFeatures().length; j++) {
+
+                            var KabelID = vectorSourceKabels.getFeatures()[j];
+                            if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
+    //                            KabelID.set("type", "LineStringSelected");
+                                ExtentArray.push(KabelID.getGeometry().getExtent());
+                                FeatureArray.push(KabelID);                            
+                            }
+    //                        else {
+    //                            KabelID.set("type", "LineString");
+    //                        }
+                        }
+                        break;
+                    } 
+    //                    else {
+    //                    feature.set("type", "Point");
+    //                }
+                }
+            }
+            if (ExtentArray.length != 0) {
+            selectedSourceKabels.addFeatures(FeatureArray);
+            var pan = ol.animation.pan({
+                duration: 1000,
+                source: /** @type {ol.Coordinate} */ (view.getCenter())
+            });
+            map.beforeRender(pan);
+            var NewExtent = maxExtent(ExtentArray);
+            map.getView().fitExtent(NewExtent, map.getSize());
+            }
+        } else {
+         window.alert("U heeft niets geselecteerd");
+        }
+    });
+-->
+

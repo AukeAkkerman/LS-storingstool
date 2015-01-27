@@ -484,29 +484,25 @@ $(document).ready(function() {
        if(selectMouseClick) {
            var ExtentArray = [];
            var FeatureArray = [];
-           for (var i=0; i< selectMouseClick.getFeatures().getLength(); i++) {
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(i);
+                var selectedFeature = features.item(k);
                 var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-               //Find corresponding name in other layer
-                    for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-                
-                        var feature = vectorSourceAansl.getFeatures()[i];
-                        if (feature.get("ARI_ADRES") == ARI) {
-                            var HLD_tevinden = feature.get("HOOFDLEIDING");
-                            //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                            for (var j=0; j< vectorSourceKabels.getFeatures().length; j++) {
-                    
-                                var KabelID = vectorSourceKabels.getFeatures()[j];
-                                if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
-        //                            KabelID.set("type", "LineStringSelected");
-                                    ExtentArray.push(KabelID.getGeometry().getExtent());
-                                    FeatureArray.push(KabelID);                            
-                                }
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+                vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        vectorSourceKabels.forEachFeature(function(featureKabel) {
+                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+    //                            KabelID.set("type", "LineStringSelected");
+                                ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                FeatureArray.push(featureKabel);                            
                             }
-                            break;
-                        }
-                    }
+                        });
+                    } 
+                });
             }
            if (ExtentArray.length != 0) {
                selectedSourceKabels.addFeatures(FeatureArray);
@@ -560,30 +556,18 @@ $(document).ready(function() {
                 var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
     //            window.alert(ARI);
                 //Find corresponding name in other layer
-                for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-
-                    var feature = vectorSourceAansl.getFeatures()[i];
-                    if (feature.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = feature.get("HOOFDLEIDING");
-                        //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                        for (var j=0; j< vectorSourceKabels.getFeatures().length; j++) {
-
-                            var KabelID = vectorSourceKabels.getFeatures()[j];
-                            if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
+                vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        vectorSourceKabels.forEachFeature(function(featureKabel) {
+                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
     //                            KabelID.set("type", "LineStringSelected");
-                                ExtentArray.push(KabelID.getGeometry().getExtent());
-                                FeatureArray.push(KabelID);                            
+                                ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                FeatureArray.push(featureKabel);                            
                             }
-    //                        else {
-    //                            KabelID.set("type", "LineString");
-    //                        }
-                        }
-                        break;
+                        });
                     } 
-    //                    else {
-    //                    feature.set("type", "Point");
-    //                }
-                }
+                });
             }
             if (ExtentArray.length != 0) {
             selectedSourceKabels.addFeatures(FeatureArray);
@@ -612,23 +596,18 @@ $(document).ready(function() {
                 var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
     //            window.alert(ARI);
                 //Find corresponding name in other layer
-                for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-
-                    var feature = vectorSourceAansl.getFeatures()[i];
-                    if (feature.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = feature.get("HOOFDLEIDING");
-                        //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                        for (var j=0; j< vectorSourceAansl.getFeatures().length; j++) {
-
-                            var AanslID = vectorSourceAansl.getFeatures()[j];
-                            if (AanslID.get("HOOFDLEIDING") == HLD_tevinden){
-                                ExtentArray.push(AanslID.getGeometry().getExtent());
-                                FeatureArray.push(AanslID);
-                            }
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
+                                    FeatureArray.push(featureAansl2);
+                                }
+                            });
                         }
-                        break;
-                        }
-                    } 
+                    }); 
                 }
                 if (ExtentArray.length != 0) {
                 selectedSourceAansl.addFeatures(FeatureArray);
@@ -644,7 +623,7 @@ $(document).ready(function() {
                 var content = "<table>"
                 content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
                 content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  'Nog onbekend' + '</td></tr>';
-                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  HLD_tevinden + '</td></tr>';
+                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';
                 content += "</table>"
                 $('#here_table').append(content);   
             }
@@ -667,35 +646,29 @@ $(document).ready(function() {
                 var selectedFeature = features.item(k);
                 var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
                 //Find corresponding name in other layer
-                for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-
-                    var feature = vectorSourceAansl.getFeatures()[i];
-                    if (feature.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = feature.get("HOOFDLEIDING");
-                        //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                        for (var j=0; j< vectorSourceAansl.getFeatures().length; j++) {
-
-                            var AanslID = vectorSourceAansl.getFeatures()[j];
-                            if (AanslID.get("HOOFDLEIDING") == HLD_tevinden && AanslID.get("SlimmeMeter") == 1){
-                                SMArray.push(j);
-                                if (AanslID.get("PingTerug") == 1){
-                                    var coordinates = AanslID.getGeometry().getCoordinates();
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                            if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
+                                SMArray.push(featureAansl2);
+                                if (featureAansl2.get("PingTerug") == 1){
+                                    var coordinates = featureAansl2.getGeometry().getCoordinates();
                                     var overlay = createCircleOutOverlay(coordinates, 1);
                                     map.addOverlay(overlay);
-                                } else if (AanslID.get("PingTerug") == 0){
-                                    var coordinates = AanslID.getGeometry().getCoordinates();
+                                } else if (featureAansl2.get("PingTerug") == 0){
+                                    var coordinates = featureAansl2.getGeometry().getCoordinates();
                                     var overlay = createCircleOutOverlay(coordinates, 0);
                                     map.addOverlay(overlay);
                                 }
 
                             }
-                        }
+                        });
                         if (SMArray.length == 0) {
                             window.alert("Geen Slimme Meter op de kabel!")
                         }
-                        break;
                     } 
-                }
+                });
             }
         } else {
          window.alert("You have not selected anything");
