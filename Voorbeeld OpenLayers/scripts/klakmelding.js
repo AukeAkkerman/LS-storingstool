@@ -249,6 +249,12 @@ var vectorSourceMSR = new ol.source.GeoJSON({
     url: 'data/NRG_stationsbehuizing_sel.GeoJSON'
 });
 
+//PC4 inladen
+var vectorSourcePC4 = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/PC4_gebieden.GeoJSON'
+});
+
 //Projectie van Kaartlagen
 
 //Klakmeldingen projecteren
@@ -294,6 +300,15 @@ var MSRLayer = new ol.layer.Vector({
     maxResolution: 5
 });
 
+//PC4en projecteren
+var PC4Layer = new ol.layer.Vector({
+    source: vectorSourcePC4,
+    projection: 'EPSG:4326',
+    style: styleFunction,
+    name: 'PC4_gebieden',
+    minResolution: 4
+});
+
 //Geselecteerde aansluitingen
 var selectedLayerKabels = new ol.layer.Vector({
     source: selectedSourceKabels,
@@ -313,7 +328,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -704,7 +719,7 @@ $(document).ready(function() {
     });
 }); 
 
-//download PNG module
+//download PNG module werkt nog niet
 var exportPNGElement = document.getElementById('export-png');
 
 if ('download' in exportPNGElement) {
@@ -724,3 +739,13 @@ if ('download' in exportPNGElement) {
   info.style.display = '';*/
 }
 
+
+//Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
+$(document).ready(function() {
+    $('#example').dataTable( {
+        ajax: "data/KLAKtest.txt",
+        columns: [
+            { data: "start_date.display" }
+        ]
+    } );
+} );
