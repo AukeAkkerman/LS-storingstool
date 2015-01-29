@@ -254,6 +254,12 @@ var vectorSourceMSR = new ol.source.GeoJSON({
     url: 'data/NRG_stationsbehuizing_sel.GeoJSON'
 });
 
+//PC4 inladen
+var vectorSourcePC4 = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/PC4_gebieden.GeoJSON'
+});
+
 //Projectie van Kaartlagen
 
 //Klakmeldingen projecteren
@@ -299,6 +305,15 @@ var MSRLayer = new ol.layer.Vector({
     maxResolution: 5
 });
 
+//PC4en projecteren
+var PC4Layer = new ol.layer.Vector({
+    source: vectorSourcePC4,
+    projection: 'EPSG:4326',
+    style: styleFunction,
+    name: 'PC4_gebieden',
+    minResolution: 4
+});
+
 //Geselecteerde aansluitingen
 var selectedLayerKabels = new ol.layer.Vector({
     source: selectedSourceKabels,
@@ -318,7 +333,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -401,7 +416,12 @@ map.addInteraction(selectMouseClick);
 $(map.getViewport()).on('click', function(evt) {
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
-    $('#here_table').empty();
+    $('#KlakInfo').empty();
+    $('#example').empty();
+    //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
+
+
+    
     //Deze onderstaande functie moet anders! De overlay zelf moet worden verwijderd en niet puur en alleen op de map, anders krijgen we een wildgroei aan overlays!
     for(var i=0; i < map.getOverlays().getLength() ; i++){
     map.removeOverlay(map.getOverlays().item(i));
@@ -480,6 +500,8 @@ $(document).ready(function() {
         }
     });
     
+    
+    //de Gestoorde kabel naar de monteur sturen
     $("#klak-naar-monteur").on('click', function(){
        if(selectMouseClick) {
            var ExtentArray = [];
@@ -586,6 +608,7 @@ $(document).ready(function() {
     
     //Achterliggende aansluitingen tonen
     $('#toon-aansl-aan-kabel').on('click', function(){
+        
         if(selectMouseClick) {
             var ExtentArray = [];
             var FeatureArray = [];
@@ -620,17 +643,53 @@ $(document).ready(function() {
                 map.getView().fitExtent(NewExtent, map.getSize());
 
                 //Vervolgens informatie toevoegen op basis van de gegevens
-                var content = "<table>"
+                var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>Storings analyse</b>"
+                content += "<table>"
                 content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
                 content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  'Nog onbekend' + '</td></tr>';
                 content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';
                 content += "</table>"
-                $('#here_table').append(content);   
-            }
-        } else {
+                KlakMeldingInfo.innerHTML = content;   
+                    
+                     //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
+                    var InfoGestAans = document.getElementById('example');
+                    var content = "<table>"
+                    content += "<thead><tr><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
+                    
+                    //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+                    for(var i = 0; i < FeatureArray.length; i++){
+                    var EAN = FeatureArray[i].get("EAN");
+                    var Functie = FeatureArray[i].get("FUNCTIE");    
+                    var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
+                    var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
+                    content += "<tr><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                    }
+                    content += "</table>"
+                    content += "<a href='#' class='export' id='export'>Export Table data into Excel</a>"
+                    InfoGestAans.innerHTML = content;
+                    //opmaak voor de lijst met gestoorde aansluitingen      
+                    
+                    $(document).ready(function() {
+                        $('#example').DataTable( {
+                                    "scrollY":        "300px",
+                                    "scrollCollapse": true,
+                                    "paging":         false,
+                                    "retrieve":        true, 
+                                    "order": [[ 2, "desc" ]]
+                        });
+                        }); 
+                        } }else {
          window.alert("You have not selected anything");
         }
-    });
+
+});
+    
+                    
+                  
+            
+
+ 
     
     $('#Help').on('click', function(){
         window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
@@ -676,7 +735,7 @@ $(document).ready(function() {
     });
 }); 
 
-//download PNG module
+//download PNG module werkt nog niet
 var exportPNGElement = document.getElementById('export-png');
 
 if ('download' in exportPNGElement) {
@@ -696,3 +755,116 @@ if ('download' in exportPNGElement) {
   info.style.display = '';*/
 }
 
+
+//Lijst opleveren voor storingscompensatie
+$('#lijst-gest-aansl').on('click', function(){
+var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
+// de aansluitings features weer ophalen    
+    if(selectMouseClick) {
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
+                                    FeatureArray.push(featureAansl2);
+                                }
+                            });
+                        }
+                    }); 
+                }
+    
+           //Vervolgens informatie over geselecteerde aansluitingen weergeven
+            CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
+            var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
+            var content = "<table id='comptab'>"
+            content += "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
+                    
+            //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+            for(var i = 0; i < FeatureArray.length; i++){
+            var TijdKlak = selectedFeature.get("Geregistreerd_op");
+            var EAN = FeatureArray[i].get("EAN");
+            var Functie = FeatureArray[i].get("FUNCTIE");    
+            var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
+            var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
+            content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+            }
+            content += "</table>"
+            CompensatieTabel.innerHTML = content;
+                   
+//hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
+/*            $(document).ready(function() {
+            $('#comptab').DataTable( {
+                        "paging":         false,
+                        "retrieve":        true, 
+                        "order": [[ 2, "desc" ]]
+                        });
+            }); */
+        }else {
+         window.alert("You have not selected anything");
+        }
+});
+
+//export to CSV functie
+$(document).ready(function () {
+
+    function exportTableToCSV($table, filename) {
+
+        var $rows = $table.find('tr:has(td)'),
+
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            tmpColDelim = String.fromCharCode(11), // vertical tab character
+            tmpRowDelim = String.fromCharCode(0), // null character
+
+            // actual delimiter characters for CSV format
+            colDelim = '","',
+            rowDelim = '"\r\n"',
+
+            // Grab text from table into CSV formatted string
+            csv = '"' + $rows.map(function (i, row) {
+                var $row = $(row),
+                    $cols = $row.find('td');
+
+                return $cols.map(function (j, col) {
+                    var $col = $(col),
+                        text = $col.text();
+
+                    return text.replace('"', '""'); // escape double quotes
+
+                }).get().join(tmpColDelim);
+
+            }).get().join(tmpRowDelim)
+                .split(tmpRowDelim).join(rowDelim)
+                .split(tmpColDelim).join(colDelim) + '"',
+
+            // Data URI
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        $(this)
+            .attr({
+            'download': filename,
+                'href': csvData,
+                'target': '_blank'
+        });
+    }
+
+    // This must be a hyperlink
+    $('#export').on('click', function (event) {
+        // CSV
+        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
+        
+        // IF CSV, don't do event.preventDefault() or return false
+        // We actually need this to be a typical hyperlink
+    });
+});
