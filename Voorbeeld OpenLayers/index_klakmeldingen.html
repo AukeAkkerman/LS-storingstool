@@ -99,6 +99,7 @@
                 <li><a href="#" tabindex="-1" id="toon-achterl-kabel">Toon Achterliggende Hoofdleiding</a></li>
                   <li><a href="#" tabidex="-1" id="toon-aansl-aan-kabel">Rapporteer aansluitingen aan gezamelijke kabel</a></li>
                   <li><a href="#" tabidex="-1" id="ping-sm-aan-kabel">Ping slimme meters aan kabel</a></li>
+                  <li><a href="#" tabidex="-1" id="ping-sm-afstand">Ping Slimme Meters binnen bepaalde afstand</a></li>
                 <li><a href="#" tabindex="-1" id="toggle-twitter-feeds">Analyseer Twitterfeeds rondom storingen</a></li>
                 <li><a href="#" tabindex="-1">Tool 4</a></li>
               </ul>
@@ -125,7 +126,7 @@
         </li>
     <li class="dropdown"><a href="#" data-toggle="dropdown">Vastleggen Storingsverloop</a>
               <ul class="dropdown-menu">
-                <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 1</a></li>
+                <li><a href="#" tabindex="-1" id="lijst-gest-aansl">Lijst met gestoorde aansluitingen</a></li>
                 <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 2</a></li>
                 <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 3</a></li>
                 <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 4</a></li>
@@ -143,32 +144,20 @@
           </ul>
     </div>
    
-  
+<table class="tb01" width="100%">
+<tr>
+<td>
 <div id="map"><div id="info"></div></div>
-
-<div id="here_table"></div>
-
-<table id="example" class="display" cellspacing="0" width="50%">
-        <thead>
-            <tr>
-                <th>start tijd</th>
-
-            </tr>
-        </thead>
- 
-        <tfoot>
-            <tr>
-                <th>start tijd</th>
-
-            </tr>
-        </tfoot>
-    </table>
-
+</td>
+<td>
+<table id="KlakInfo" width="100%"></table><br><br>
+<table class="display" cellspacing="0" id="example"></table>
+</td></tr>
+</table>  
     <script src="http://openlayers.org/en/v3.1.1/build/ol.js"></script>
+    <script src="http://ol3js.org/en/master/build/ol.js"></script>
     <script src="scripts/klakmelding.js"></script>
 
 
 </body>
 </html>
-
-

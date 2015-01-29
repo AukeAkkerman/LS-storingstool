@@ -1,6 +1,11 @@
 //EERST ALLE HELPFUNCTIES DEFINIEEREN
 //Script om alle helpfuncties in klakmelding.js op te slaan, voor overzichtelijkheid
 
+function IsNumeric(input)
+{
+    return (input - 0) == input && (''+input).replace(/^\s+|\s+$/g, "").length > 0;
+}
+
 function myMax(a)
 {
     var m = -Infinity, i = 0, n = a.length;
@@ -340,8 +345,13 @@ var map = new ol.Map({
 //Stuk hieronder is voor de tooltips
 var info = $('#info');
 info.tooltip({
-  animation: false,
-  trigger: 'manual'
+    animation: false,
+    trigger: 'manual',
+    options: {
+        content: function() {
+            return $(this).attr('title');
+        }
+    }
 });
 
 var displayFeatureInfo_MouseOver = function(pixel) {
@@ -403,41 +413,20 @@ var selectMouseClick = new ol.interaction.Select({
 });
 map.addInteraction(selectMouseClick);
 
-var changeInteraction = function() {
-  if (selectMouseClick !== null) {
-    selectedSourceAansl.clear();
-    map.removeInteraction(selectMouseClick);
-  }
-};
-
-//Onderstaande functie (om features weer oorspronkelijke kleur te geven nadat ze zijn geselecteerd werkt nog niet helemaal lekker (qua snelheid)
-
-selectMouseClick.getFeatures().on("change:length", function () {
-//    for (var i=0; i < vectorSourceKabels.getFeatures().length; i++) {
-//        var feature = vectorSourceKabels.getFeatures()[i];
-//        feature.set("type", "LineString");
-//    }
-    if(overlay){
-    map.removeOverlay(overlay);
-    }
-    //Features uit de selected laag halen
-    selectedSourceAansl.clear();
-    selectedSourceKabels.clear();    
-    //Onderstaande (om aansluitingen weer terug te zetten in nieuwe gegevens), gaat nog te langzaam
-//    for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-//        var feature = vectorSourceAansl.getFeatures()[i];
-//        feature.set("type", "Point");
-//    }
-});
-
 $(map.getViewport()).on('click', function(evt) {
-    select = null;
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
-    $('#here_table').empty()
+    $('#KlakInfo').empty();
+    $('#example').empty();
+    //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
+
+
+    
+    //Deze onderstaande functie moet anders! De overlay zelf moet worden verwijderd en niet puur en alleen op de map, anders krijgen we een wildgroei aan overlays!
+    for(var i=0; i < map.getOverlays().getLength() ; i++){
+    map.removeOverlay(map.getOverlays().item(i));
+    }
 });
-
-
 
 function createCircleOutOverlay(position, WelNiet) {
     var elem = document.createElement('div');
@@ -481,33 +470,61 @@ $(document).ready(function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
     });
     
+    $("#ping-sm-afstand").on('click', function(){
+        if(selectMouseClick) {
+            var Afstand = prompt("Ping binnen welke afstand van de geselecteerde KLAK melding? (km)", 3);
+            if(IsNumeric(Afstand)){
+                var x = selectMouseClick.getFeatures().item(0).getGeometry().getExtent()[0];
+                var y = selectMouseClick.getFeatures().item(0).getGeometry().getExtent()[1];
+                var NumAfstand = 1000*Number(Afstand); //Afstand moet hier in meter worden gegeven
+                var extent = [x-NumAfstand, y-NumAfstand, x+NumAfstand, y+NumAfstand];
+//                var FocalFeature = selectMouseClick.getFeatures().item(0);
+                AanslLayer.getSource().forEachFeatureInExtent(extent, function(feature) {
+                    if (feature.get("SlimmeMeter") == 1){
+                                if (feature.get("PingTerug") == 1){
+                                    var coordinates = feature.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 1);
+                                    map.addOverlay(overlay);
+                                } else if (feature.get("PingTerug") == 0){
+                                    var coordinates = feature.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 0);
+                                    map.addOverlay(overlay);
+                                }
+                            }
+                        });
+            } else {
+                window.alert("Voer een getal in!");
+            } 
+            } else {
+            window.alert("Selecteer eerst een KLAK melding");
+        }
+    });
+    
+    
+    //de Gestoorde kabel naar de monteur sturen
     $("#klak-naar-monteur").on('click', function(){
        if(selectMouseClick) {
            var ExtentArray = [];
            var FeatureArray = [];
-           for (var i=0; i< selectMouseClick.getFeatures().getLength(); j++) {
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(i);
+                var selectedFeature = features.item(k);
                 var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-               //Find corresponding name in other layer
-                    for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-                
-                        var feature = vectorSourceAansl.getFeatures()[i];
-                        if (feature.get("ARI_ADRES") == ARI) {
-                            var HLD_tevinden = feature.get("HOOFDLEIDING");
-                            //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                            for (var j=0; j< vectorSourceKabels.getFeatures().length; j++) {
-                    
-                                var KabelID = vectorSourceKabels.getFeatures()[j];
-                                if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
-        //                            KabelID.set("type", "LineStringSelected");
-                                    ExtentArray.push(KabelID.getGeometry().getExtent());
-                                    FeatureArray.push(KabelID);                            
-                                }
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+                vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        vectorSourceKabels.forEachFeature(function(featureKabel) {
+                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+    //                            KabelID.set("type", "LineStringSelected");
+                                ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                FeatureArray.push(featureKabel);                            
                             }
-                            break;
-                        } 
-                    }
+                        });
+                    } 
+                });
             }
            if (ExtentArray.length != 0) {
                selectedSourceKabels.addFeatures(FeatureArray);
@@ -528,14 +545,20 @@ $(document).ready(function() {
            var InfoMonteurTabel = MonteurWindow.document.getElementById('monteur_info_tabel');
            var content = "<table>"
            content += "<tr><td><b>KLAK Melding </b></td></tr>"
-           content += "<tr><td>Naam Klant</td><td>Adres Klant</td><td>Telefoonnr. Klant</td><tr>"
+           content += "<tr><td><b>Naam Klant</td><td><b>Adres Klant</td><td><b>Telefoonnr. Klant</b></td></tr>"
            for(var i=0; i < selectMouseClick.getFeatures().getLength(); i++){
                var NaamMelder = selectMouseClick.getFeatures().item(i).get("Klant");
                var AdresMelder = selectMouseClick.getFeatures().item(i).get("STRAAT") + ' ' +  selectMouseClick.getFeatures().item(i).get("NR");
                content += "<tr><td> " + NaamMelder + " </td><td> " + AdresMelder + " </td><td> Onbekend </td></tr>";
            }
            //Nu voor alle kabels, dit kan via de FeatureArray waarin de kabel features in zijn opgeslagen
-           
+           content += "<tr><td><b>Hoofdleiding Nummer</td><td><b>Uitvoering</td><td><b>Lengte</td></b></tr>" 
+           for(var i = 0; i < FeatureArray.length; i++){
+               var KabelHld = FeatureArray[i].get("HOOFDLEIDING");
+               var KabelUitv = FeatureArray[i].get("UITVOERING_SCHETS"); 
+               var KabelLengte = FeatureArray[i].get("LIGGING_Length"); 
+               content += "<tr><td> " + KabelHld + " </td><td> " + KabelUitv + " </td><td> " +  KabelLengte + " </td></tr>";
+           }
            content += "</table>"
            InfoMonteurTabel.innerHTML = content;
         } else {
@@ -546,109 +569,127 @@ $(document).ready(function() {
     //Achterliggende kabel tonen
     $('#toon-achterl-kabel').on('click', function(){
         if(selectMouseClick) {
-            //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-            var features = selectMouseClick.getFeatures();
-            var selectedFeature = features.item(0);
-            var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-//            window.alert(ARI);
-            //Find corresponding name in other layer
-            for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-                
-                var feature = vectorSourceAansl.getFeatures()[i];
-                if (feature.get("ARI_ADRES") == ARI) {
-                    var HLD_tevinden = feature.get("HOOFDLEIDING");
-                    //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                    var ExtentArray = [];
-                    var FeatureArray = [];
-                    for (var j=0; j< vectorSourceKabels.getFeatures().length; j++) {
-                    
-                        var KabelID = vectorSourceKabels.getFeatures()[j];
-                        if (KabelID.get("HOOFDLEIDING") == HLD_tevinden){
-//                            KabelID.set("type", "LineStringSelected");
-                            ExtentArray.push(KabelID.getGeometry().getExtent());
-                            FeatureArray.push(KabelID);                            
-                        }
-//                        else {
-//                            KabelID.set("type", "LineString");
-//                        }
-                    }
-                    if (ExtentArray.length != 0) {
-                        selectedSourceKabels.addFeatures(FeatureArray);
-                        var pan = ol.animation.pan({
-                            duration: 1000,
-                            source: /** @type {ol.Coordinate} */ (view.getCenter())
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+                vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        vectorSourceKabels.forEachFeature(function(featureKabel) {
+                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+    //                            KabelID.set("type", "LineStringSelected");
+                                ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                FeatureArray.push(featureKabel);                            
+                            }
                         });
-                        map.beforeRender(pan);
-                        var NewExtent = maxExtent(ExtentArray);
-                        map.getView().fitExtent(NewExtent, map.getSize());
-                    }
-                    break;
-                } 
-//                    else {
-//                    feature.set("type", "Point");
-//                }
+                    } 
+                });
+            }
+            if (ExtentArray.length != 0) {
+            selectedSourceKabels.addFeatures(FeatureArray);
+            var pan = ol.animation.pan({
+                duration: 1000,
+                source: /** @type {ol.Coordinate} */ (view.getCenter())
+            });
+            map.beforeRender(pan);
+            var NewExtent = maxExtent(ExtentArray);
+            map.getView().fitExtent(NewExtent, map.getSize());
             }
         } else {
-         window.alert("You have not selected anything");
+         window.alert("U heeft niets geselecteerd");
         }
     });
     
     //Achterliggende aansluitingen tonen
     $('#toon-aansl-aan-kabel').on('click', function(){
+        
         if(selectMouseClick) {
-            //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-            var features = selectMouseClick.getFeatures();
-            var selectedFeature = features.item(0);
-            var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-//            window.alert(ARI);
-            //Find corresponding name in other layer
-            for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-                
-                var feature = vectorSourceAansl.getFeatures()[i];
-                if (feature.get("ARI_ADRES") == ARI) {
-                    var HLD_tevinden = feature.get("HOOFDLEIDING");
-                    //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                    var ExtentArray = [];
-                    var FeatureArray = [];
-                    for (var j=0; j< vectorSourceAansl.getFeatures().length; j++) {
-                        
-                        var AanslID = vectorSourceAansl.getFeatures()[j];
-                        if (AanslID.get("HOOFDLEIDING") == HLD_tevinden){
-                            ExtentArray.push(AanslID.getGeometry().getExtent());
-                            FeatureArray.push(AanslID);
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
+                                    FeatureArray.push(featureAansl2);
+                                }
+                            });
                         }
-//                        else {
-//                            KabelID.set("type", "LineString");
-//                        }
+                    }); 
+                }
+                if (ExtentArray.length != 0) {
+                selectedSourceAansl.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                map.getView().fitExtent(NewExtent, map.getSize());
+
+                //Vervolgens informatie toevoegen op basis van de gegevens
+                var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>Storings analyse</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
+                content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  'Nog onbekend' + '</td></tr>';
+                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';
+                content += "</table>"
+                KlakMeldingInfo.innerHTML = content;   
+                    
+                     //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
+                    var InfoGestAans = document.getElementById('example');
+                    var content = "<table>"
+                    content += "<thead><tr><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
+                    
+                    //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+                    for(var i = 0; i < FeatureArray.length; i++){
+                    var EAN = FeatureArray[i].get("EAN");
+                    var Functie = FeatureArray[i].get("FUNCTIE");    
+                    var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
+                    var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
+                    content += "<tr><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
                     }
-                    if (ExtentArray.length != 0) {
-                        selectedSourceAansl.addFeatures(FeatureArray);
-                        var pan = ol.animation.pan({
-                            duration: 1000,
-                            source: /** @type {ol.Coordinate} */ (view.getCenter())
+                    content += "</table>"
+                    content += "<a href='#' class='export' id='export'>Export Table data into Excel</a>"
+                    InfoGestAans.innerHTML = content;
+                    //opmaak voor de lijst met gestoorde aansluitingen      
+                    
+                    $(document).ready(function() {
+                        $('#example').DataTable( {
+                                    "scrollY":        "300px",
+                                    "scrollCollapse": true,
+                                    "paging":         false,
+                                    "retrieve":        true, 
+                                    "order": [[ 2, "desc" ]]
                         });
-                        map.beforeRender(pan);
-                        var NewExtent = maxExtent(ExtentArray);
-                        map.getView().fitExtent(NewExtent, map.getSize());
-                        
-                        //Vervolgens informatie toevoegen op basis van de gegevens
-                        var content = "<table>"
-                        content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
-                        content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  'Nog onbekend' + '</td></tr>';
-                        content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  HLD_tevinden + '</td></tr>';
-                        content += "</table>"
-                        $('#here_table').append(content);                        
-                    }
-                    break;
-                } 
-//                    else {
-//                    feature.set("type", "Point");
-//                }
-            }
-        } else {
+                        }); 
+                        } }else {
          window.alert("You have not selected anything");
         }
-    });
+
+});
+    
+                    
+                  
+            
+
+ 
     
     $('#Help').on('click', function(){
         window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
@@ -657,61 +698,36 @@ $(document).ready(function() {
     //Slimme meters "pingen"
     $('#ping-sm-aan-kabel').on('click', function(){
         if(selectMouseClick) {
-            //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-            var features = selectMouseClick.getFeatures();
-            var selectedFeature = features.item(0);
-            var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-//            window.alert(ARI);
-            //Find corresponding name in other layer
-            for (var i=0; i < vectorSourceAansl.getFeatures().length; i++) {
-                
-                var feature = vectorSourceAansl.getFeatures()[i];
-                if (feature.get("ARI_ADRES") == ARI) {
-                    var HLD_tevinden = feature.get("HOOFDLEIDING");
-                    //Array om de maximale extent te bepalen en waar de zoom uiteindelijk heenmoet
-                    var ExtentArray = [];
-                    for (var j=0; j< vectorSourceAansl.getFeatures().length; j++) {
-                    
-                        var AanslID = vectorSourceAansl.getFeatures()[j];
-                        if (AanslID.get("HOOFDLEIDING") == HLD_tevinden && AanslID.get("SlimmeMeter") == 1){
-                            if (AanslID.get("PingTerug") == 1){
-                                //AanslID.set("type", "AanslKabelPoint");
-                                ExtentArray.push(AanslID.getGeometry().getExtent());
-                                coordinates = AanslID.getGeometry().getCoordinates();
-                                overlay = createCircleOutOverlay(coordinates, 1);
-                                map.addOverlay(overlay);
-                            //Nu vervolgens de hele kabel inzoomen
-                            } else if (AanslID.get("PingTerug") == 1){
-                            //AanslID.set("type", "AanslKabelPoint");
-                            ExtentArray.push(AanslID.getGeometry().getExtent());
-                            coordinates = AanslID.getGeometry().getCoordinates();
-                            overlay = createCircleOutOverlay(coordinates, 1);
-                            map.addOverlay(overlay);
-                            //Nu vervolgens de hele kabel inzoomen
+            var SMArray = []
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                            if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
+                                SMArray.push(featureAansl2);
+                                if (featureAansl2.get("PingTerug") == 1){
+                                    var coordinates = featureAansl2.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 1);
+                                    map.addOverlay(overlay);
+                                } else if (featureAansl2.get("PingTerug") == 0){
+                                    var coordinates = featureAansl2.getGeometry().getCoordinates();
+                                    var overlay = createCircleOutOverlay(coordinates, 0);
+                                    map.addOverlay(overlay);
+                                }
+
                             }
-                            
-                        }
-//                        else {
-//                            KabelID.set("type", "LineString");
-//                        }
-                    }
-                    if (ExtentArray.length != 0) {
-                        var pan = ol.animation.pan({
-                            duration: 1000,
-                            source: /** @type {ol.Coordinate} */ (view.getCenter())
                         });
-                        map.beforeRender(pan);
-                        var NewExtent = maxExtent(ExtentArray);
-                        map.getView().fitExtent(NewExtent, map.getSize());
-                    }
-                    else if (ExtentArray.length == 0) {
-                    window.alert("Geen Slimme Meter op de kabel!")
-                    }
-                    break;
-                } 
-//                    else {
-//                    feature.set("type", "Point");
-//                }
+                        if (SMArray.length == 0) {
+                            window.alert("Geen Slimme Meter op de kabel!")
+                        }
+                    } 
+                });
             }
         } else {
          window.alert("You have not selected anything");
@@ -740,12 +756,115 @@ if ('download' in exportPNGElement) {
 }
 
 
-//Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
-$(document).ready(function() {
-    $('#example').dataTable( {
-        ajax: "data/KLAKtest.txt",
-        columns: [
-            { data: "start_date.display" }
-        ]
-    } );
-} );
+//Lijst opleveren voor storingscompensatie
+$('#lijst-gest-aansl').on('click', function(){
+var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
+// de aansluitings features weer ophalen    
+    if(selectMouseClick) {
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+    //            window.alert(ARI);
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("ARI_ADRES") == ARI) {
+                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
+                                    FeatureArray.push(featureAansl2);
+                                }
+                            });
+                        }
+                    }); 
+                }
+    
+           //Vervolgens informatie over geselecteerde aansluitingen weergeven
+            CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
+            var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
+            var content = "<table id='comptab'>"
+            content += "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
+                    
+            //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+            for(var i = 0; i < FeatureArray.length; i++){
+            var TijdKlak = selectedFeature.get("Geregistreerd_op");
+            var EAN = FeatureArray[i].get("EAN");
+            var Functie = FeatureArray[i].get("FUNCTIE");    
+            var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
+            var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
+            content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+            }
+            content += "</table>"
+            CompensatieTabel.innerHTML = content;
+                   
+//hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
+/*            $(document).ready(function() {
+            $('#comptab').DataTable( {
+                        "paging":         false,
+                        "retrieve":        true, 
+                        "order": [[ 2, "desc" ]]
+                        });
+            }); */
+        }else {
+         window.alert("You have not selected anything");
+        }
+});
+
+//export to CSV functie
+$(document).ready(function () {
+
+    function exportTableToCSV($table, filename) {
+
+        var $rows = $table.find('tr:has(td)'),
+
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            tmpColDelim = String.fromCharCode(11), // vertical tab character
+            tmpRowDelim = String.fromCharCode(0), // null character
+
+            // actual delimiter characters for CSV format
+            colDelim = '","',
+            rowDelim = '"\r\n"',
+
+            // Grab text from table into CSV formatted string
+            csv = '"' + $rows.map(function (i, row) {
+                var $row = $(row),
+                    $cols = $row.find('td');
+
+                return $cols.map(function (j, col) {
+                    var $col = $(col),
+                        text = $col.text();
+
+                    return text.replace('"', '""'); // escape double quotes
+
+                }).get().join(tmpColDelim);
+
+            }).get().join(tmpRowDelim)
+                .split(tmpRowDelim).join(rowDelim)
+                .split(tmpColDelim).join(colDelim) + '"',
+
+            // Data URI
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        $(this)
+            .attr({
+            'download': filename,
+                'href': csvData,
+                'target': '_blank'
+        });
+    }
+
+    // This must be a hyperlink
+    $('#export').on('click', function (event) {
+        // CSV
+        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
+        
+        // IF CSV, don't do event.preventDefault() or return false
+        // We actually need this to be a typical hyperlink
+    });
+});
