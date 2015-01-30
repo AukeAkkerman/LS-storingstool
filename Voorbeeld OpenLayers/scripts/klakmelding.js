@@ -183,9 +183,9 @@ var styleSelected = {
         image: new ol.style.Circle({
             radius: 6,
             fill: new ol.style.Fill({
-                color   : 'rgba(0,0,100,0.6)'
+                color   : 'rgba(200,0,50,0.6)'
             }),
-            stroke: new ol.style.Stroke({color: 'red', width: 3})
+            stroke: new ol.style.Stroke({color: 'red', width: 1})
             })
     })],
     'LineString': [new ol.style.Style({
@@ -418,7 +418,7 @@ $(map.getViewport()).on('click', function(evt) {
     selectedSourceKabels.clear();
     $('#KlakInfo').empty();
     $('#example').empty();
-    //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
+   //$('#example').dataTable().Destroy(); // voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
 
 
     
@@ -612,6 +612,9 @@ $(document).ready(function() {
         if(selectMouseClick) {
             var ExtentArray = [];
             var FeatureArray = [];
+            var SMArray = [];
+            var SMOffArray = [];
+            var KlakArray = []; 
             for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
@@ -627,10 +630,16 @@ $(document).ready(function() {
                                 if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
                                     ExtentArray.push(featureAansl2.getGeometry().getExtent());
                                     FeatureArray.push(featureAansl2);
+                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
+                                    SMArray.push(featureAansl2);}
+                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
+                                    SMOffArray.push(featureAansl2);}                                    
+
                                 }
                             });
                         }
                     }); 
+                
                 }
                 if (ExtentArray.length != 0) {
                 selectedSourceAansl.addFeatures(FeatureArray);
@@ -642,15 +651,53 @@ $(document).ready(function() {
                 var NewExtent = maxExtent(ExtentArray);
                 map.getView().fitExtent(NewExtent, map.getSize());
 
+                //Aantal KLAK meldingen op hoofdleiding
+                var KlakArray = [];
+                for (var j=0; j< FeatureArray.length; j++) {
+                var features = FeatureArray;
+                var Aansluiting = features[j];
+                var ARI = Aansluiting.get("ARI_ADRES");
+            
+                vectorSourceKLAK.forEachFeature(function(featureKlak){
+                if (featureKlak.get("PC") + featureKlak.get("NR") + " " == ARI) {
+                    KlakArray.push(featureKlak);
+                }
+                });
+                 }
+                    
+                //Percentage kans op LS storing berekenen
+             
+                if (KlakArray.length > 1){
+                var Kans = 0.95;
+                } else if(KlakArray.length == 1 && SMArray.length == 0){
+                    Kans = 0.5;
+                } else if(KlakArray.length == 1 && SMOffArray.length != 0){
+                    Kans = 0.5 + 0.5*(1-0.25/SMOffArray.length);
+                } else {
+                    Kans = 0.5;
+                }
+                    
+                    
+                    
                 //Vervolgens informatie toevoegen op basis van de gegevens
                 var KlakMeldingInfo = document.getElementById('KlakInfo');
                 var content = "<b>Storings analyse</b>"
                 content += "<table>"
+                content += '<tr><td>' + 'Aantal KLAK meldingen op kabel </td><td>' +  KlakArray.length + '</td></tr>';
                 content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
-                content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  'Nog onbekend' + '</td></tr>';
-                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';
+                content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  SMArray.length + '</td></tr>';
+                content += '<tr><td>' + 'Waarvan offline </td><td> ' +  SMOffArray.length + '</td></tr>';
+                content += '<tr><td>' + 'kans op LS storing </td><td> ' +  Kans*100 + ' % </td></tr>';    
+                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';    
                 content += "</table>"
                 KlakMeldingInfo.innerHTML = content;   
+                
+                
+                    
+                    
+                // MSR informatie erbij zoeken
+                    
+                    
                     
                      //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                     var InfoGestAans = document.getElementById('example');
@@ -787,7 +834,7 @@ var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=5
            //Vervolgens informatie over geselecteerde aansluitingen weergeven
             CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
             var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
-            var content = "<table id='comptab'>"
+            var content = "<table class='display' id='comptab'>"
             content += "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
                     
             //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
@@ -803,13 +850,12 @@ var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=5
             CompensatieTabel.innerHTML = content;
                    
 //hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
-/*            $(document).ready(function() {
-            $('#comptab').DataTable( {
+           
+           $('#comptab').DataTable( {
                         "paging":         false,
                         "retrieve":        true, 
                         "order": [[ 2, "desc" ]]
                         });
-            }); */
         }else {
          window.alert("You have not selected anything");
         }
@@ -868,3 +914,5 @@ $(document).ready(function () {
         // We actually need this to be a typical hyperlink
     });
 });
+
+
