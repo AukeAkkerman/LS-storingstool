@@ -445,7 +445,59 @@ function createCircleOutOverlay(position, WelNiet) {
 // Handle visibility control
 
 $(document).ready(function() {    
+    
+    //export to CSV functie
+    function exportTableToCSV($table, filename) {
 
+        var $rows = $table.find('tr:has(td)'),
+
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            tmpColDelim = String.fromCharCode(11), // vertical tab character
+            tmpRowDelim = String.fromCharCode(0), // null character
+
+            // actual delimiter characters for CSV format
+            colDelim = '","',
+            rowDelim = '"\r\n"',
+
+            // Grab text from table into CSV formatted string
+            csv = '"' + $rows.map(function (i, row) {
+                var $row = $(row),
+                    $cols = $row.find('td');
+
+                return $cols.map(function (j, col) {
+                    var $col = $(col),
+                        text = $col.text();
+
+                    return text.replace('"', '""'); // escape double quotes
+
+                }).get().join(tmpColDelim);
+
+            }).get().join(tmpRowDelim)
+                .split(tmpRowDelim).join(rowDelim)
+                .split(tmpColDelim).join(colDelim) + '"',
+
+            // Data URI
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        $(this)
+            .attr({
+            'download': filename,
+                'href': csvData,
+                'target': '_blank'
+        });
+    }
+
+    // This must be a hyperlink
+    $('#export').on('click', function (event) {
+        // CSV
+        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
+        
+        // IF CSV, don't do event.preventDefault() or return false
+        // We actually need this to be a typical hyperlink
+    });
+
+    
     $('#toggle-ls-storingen').on('click', function () {
         KLAKLayer.setVisible(!KLAKLayer.getVisible());
     });
@@ -678,18 +730,12 @@ $(document).ready(function() {
                                     "retrieve":        true, 
                                     "order": [[ 2, "desc" ]]
                         });
-                        }); 
-                        } }else {
+                    }); 
+        } }else {
          window.alert("You have not selected anything");
         }
 
 });
-    
-                    
-                  
-            
-
- 
     
     $('#Help').on('click', function(){
         window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
@@ -733,6 +779,64 @@ $(document).ready(function() {
          window.alert("You have not selected anything");
         }
     });
+    
+    $('#lijst-gest-aansl').on('click', function(){
+        var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
+        // de aansluitings features weer ophalen    
+            if(selectMouseClick) {
+                    var FeatureArray = [];
+                    for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                        //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                        var features = selectMouseClick.getFeatures();
+                        var selectedFeature = features.item(k);
+                        var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+            //            window.alert(ARI);
+                        //Find corresponding name in other layer
+                       vectorSourceAansl.forEachFeature(function(featureAansl){
+                            if (featureAansl.get("ARI_ADRES") == ARI) {
+                                var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                                //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                                    vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                        if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                                            FeatureArray.push(featureAansl2);
+                                        }
+                                    });
+                                }
+                            }); 
+                        }
+
+                   //Vervolgens informatie over geselecteerde aansluitingen weergeven
+//                    CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
+//                    var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
+                    CompensatieWindow.document.write("<table id='comptab'>");
+                    var CompensatieTabel = CompensatieWindow.document.getElementById('comptab');
+                    var content = "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
+
+                    //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+                    for(var i = 0; i < FeatureArray.length; i++){
+                    var TijdKlak = selectedFeature.get("Geregistreerd_op");
+                    var EAN = FeatureArray[i].get("EAN");
+                    var Functie = FeatureArray[i].get("FUNCTIE");    
+                    var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
+                    var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
+                    content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                    }
+                    content += "</table>"
+                    CompensatieTabel.innerHTML = content;
+
+        //hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
+//                    CompensatieWindow.document.getElementById('#comptab').DataTable( {
+                    CompensatieTabel.DataTable( {
+
+                                "paging":         false,
+                                "retrieve":        true, 
+                                "order": [[ 2, "desc" ]]
+                                }); 
+                }else {
+                 window.alert("You have not selected anything");
+                }
+        });
+
 }); 
 
 //download PNG module werkt nog niet
@@ -757,114 +861,3 @@ if ('download' in exportPNGElement) {
 
 
 //Lijst opleveren voor storingscompensatie
-$('#lijst-gest-aansl').on('click', function(){
-var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
-// de aansluitings features weer ophalen    
-    if(selectMouseClick) {
-            var ExtentArray = [];
-            var FeatureArray = [];
-            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
-                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-                var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(k);
-                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-    //            window.alert(ARI);
-                //Find corresponding name in other layer
-               vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
-                            vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
-                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
-                                    FeatureArray.push(featureAansl2);
-                                }
-                            });
-                        }
-                    }); 
-                }
-    
-           //Vervolgens informatie over geselecteerde aansluitingen weergeven
-            CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
-            var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
-            var content = "<table id='comptab'>"
-            content += "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
-                    
-            //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
-            for(var i = 0; i < FeatureArray.length; i++){
-            var TijdKlak = selectedFeature.get("Geregistreerd_op");
-            var EAN = FeatureArray[i].get("EAN");
-            var Functie = FeatureArray[i].get("FUNCTIE");    
-            var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
-            var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
-            content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
-            }
-            content += "</table>"
-            CompensatieTabel.innerHTML = content;
-                   
-//hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
-/*            $(document).ready(function() {
-            $('#comptab').DataTable( {
-                        "paging":         false,
-                        "retrieve":        true, 
-                        "order": [[ 2, "desc" ]]
-                        });
-            }); */
-        }else {
-         window.alert("You have not selected anything");
-        }
-});
-
-//export to CSV functie
-$(document).ready(function () {
-
-    function exportTableToCSV($table, filename) {
-
-        var $rows = $table.find('tr:has(td)'),
-
-            // Temporary delimiter characters unlikely to be typed by keyboard
-            // This is to avoid accidentally splitting the actual contents
-            tmpColDelim = String.fromCharCode(11), // vertical tab character
-            tmpRowDelim = String.fromCharCode(0), // null character
-
-            // actual delimiter characters for CSV format
-            colDelim = '","',
-            rowDelim = '"\r\n"',
-
-            // Grab text from table into CSV formatted string
-            csv = '"' + $rows.map(function (i, row) {
-                var $row = $(row),
-                    $cols = $row.find('td');
-
-                return $cols.map(function (j, col) {
-                    var $col = $(col),
-                        text = $col.text();
-
-                    return text.replace('"', '""'); // escape double quotes
-
-                }).get().join(tmpColDelim);
-
-            }).get().join(tmpRowDelim)
-                .split(tmpRowDelim).join(rowDelim)
-                .split(tmpColDelim).join(colDelim) + '"',
-
-            // Data URI
-            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
-
-        $(this)
-            .attr({
-            'download': filename,
-                'href': csvData,
-                'target': '_blank'
-        });
-    }
-
-    // This must be a hyperlink
-    $('#export').on('click', function (event) {
-        // CSV
-        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
-        
-        // IF CSV, don't do event.preventDefault() or return false
-        // We actually need this to be a typical hyperlink
-    });
-});
