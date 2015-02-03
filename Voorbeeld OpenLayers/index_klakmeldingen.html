@@ -21,7 +21,12 @@
    <script src="scripts/jquery.js"></script>
 -->
     <script src="scripts/jquery.dataTables.min.js"></script>
-
+<!--[if lte IE 9]>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.6.2/html5shiv.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.3.0/respond.js"></script>
+<![endif]--> 
+    
+    
 </head>
 <body>
 
@@ -46,7 +51,7 @@
                       </ul>
                     </li>
                     <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">HS</a>
-                      <ul class="dropdown-menu"
+                      <ul class="dropdown-menu">
                         <li><a href="#" tabindex="-1">Onderstation</a></li>
                         <li><a href="#" tabindex="-1">HS Kabels</a></li>
                       </ul>

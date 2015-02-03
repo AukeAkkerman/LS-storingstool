@@ -231,8 +231,9 @@ var vectorSourceKabels = new ol.source.GeoJSON({
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/Aansluitingen_inclslim.GeoJSON'
+    url: 'data/Aansluitingen_inclslim(3).GeoJSON'
 });
+
 
 var selectedSourceAansl = new ol.source.Vector({
     projection: 'EPSG:3857'
@@ -696,6 +697,9 @@ $(document).ready(function() {
                     
                     
                 // MSR informatie erbij zoeken
+                
+                    
+                    
                     
                     
                     
@@ -783,7 +787,7 @@ $(document).ready(function() {
 }); 
 
 //download PNG module werkt nog niet
-var exportPNGElement = document.getElementById('export-png');
+/*var exportPNGElement = document.getElementById('export-png');
 
 if ('download' in exportPNGElement) {
   exportPNGElement.addEventListener('click', function(e) {
@@ -795,12 +799,12 @@ if ('download' in exportPNGElement) {
   }, false);
 } else {
     alert('werkt niet gek')
- /* var info = document.getElementById('no-download');
+  var info = document.getElementById('no-download');
   *
    * display error message
    
-  info.style.display = '';*/
-}
+  info.style.display = '';
+}*/
 
 
 //Lijst opleveren voor storingscompensatie
