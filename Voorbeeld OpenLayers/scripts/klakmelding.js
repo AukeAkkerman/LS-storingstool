@@ -53,6 +53,8 @@ function maxExtent(inputArray) {
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
+
+
 var projection = ol.proj.get('EPSG:3857');
 
 var Alkmaar = ol.proj.transform([4.75355239868168, 52.62976657605367], 'EPSG:4326', 'EPSG:3857');
@@ -342,6 +344,10 @@ var map = new ol.Map({
   }),
 });
 
+//Voor de sidebar
+
+var sidebar = $('#sidebar').sidebar();
+
 //Stuk hieronder is voor de tooltips
 var info = $('#info');
 info.tooltip({
@@ -356,7 +362,7 @@ info.tooltip({
 
 var displayFeatureInfo_MouseOver = function(pixel) {
   info.css({
-    left: (pixel[0] + 10) + 'px',
+    left: (pixel[0]) + 'px',
     top: (pixel[1]) + 'px'
   });
   var featureInfo = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
@@ -416,8 +422,8 @@ map.addInteraction(selectMouseClick);
 $(map.getViewport()).on('click', function(evt) {
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
-    $('#KlakInfo').empty();
-    $('#example').empty();
+//    $('#KlakInfo').empty();
+//    $('#example').empty();
     //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
 
 
@@ -692,6 +698,14 @@ $(document).ready(function() {
                 });
                 map.beforeRender(pan);
                 var NewExtent = maxExtent(ExtentArray);
+                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
+                    for(var k=0; k<NewExtent.length; k++) {
+                        if(k == 0 || k == 1){
+                            NewExtent[k] *= (1/1.000002);
+                        } else {
+                            NewExtent[k] *= 1.000002;
+                        }
+                    }
                 map.getView().fitExtent(NewExtent, map.getSize());
 
                 //Vervolgens informatie toevoegen op basis van de gegevens
@@ -722,15 +736,16 @@ $(document).ready(function() {
                     InfoGestAans.innerHTML = content;
                     //opmaak voor de lijst met gestoorde aansluitingen      
                     
-                    $(document).ready(function() {
-                        $('#example').DataTable( {
-                                    "scrollY":        "300px",
-                                    "scrollCollapse": true,
-                                    "paging":         false,
-                                    "retrieve":        true, 
-                                    "order": [[ 2, "desc" ]]
-                        });
-                    }); 
+                    $('#example').DataTable( {
+//                                "scrollY":        "500px",
+                                "autoWidth":      true,
+                                "scrollCollapse": true,
+                                "paging":         false,
+                                "retrieve":        true, 
+                                "order": [[ 2, "desc" ]]
+                    });
+                    //vervolgens de tabbar openen waar de gegevens instaan
+                    sidebar.open("storingsgegevens")
         } }else {
          window.alert("You have not selected anything");
         }
@@ -836,7 +851,25 @@ $(document).ready(function() {
                  window.alert("You have not selected anything");
                 }
         });
-
+    
+    $("#zoekadres").on('click', function() {
+       var AdresVeld = $("#adreszoeker") 
+       $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
+            var FoundExtent = data[0].boundingbox;
+            var placemark_lat = data[0].lat;
+            var placemark_lon = data[0].lon;
+            
+            //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
+            var FoundMarker = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.transform([placemark_lon, placemark_lat], 'EPSG:4326', 'EPSG:3857')),
+  name: AdresVeld.value
+            });
+           selectedSourceAansl.addFeatures(FoundMarker);
+           
+           map.getView().setCenter(ol.proj.transform([placemark_lon, placemark_lat], 'EPSG:4326', 'EPSG:3857'));
+        
+       });
+    });
 }); 
 
 //download PNG module werkt nog niet
