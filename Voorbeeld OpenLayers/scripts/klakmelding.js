@@ -166,6 +166,39 @@ if (feature.get("type")) {
 };
 
 
+var styleFunctionPC4 = function(feature, resolution) {
+    
+    var TextInhoud = feature.get('PC4CODE') + '\n ' + feature.get('PC4NAAM');
+    if(map.getView().getZoom() >=13) {
+        TextInhoud = feature.get('PC4CODE') + '\n ' + feature.get('PC4NAAM');
+    } else if (map.getView().getZoom() < 13 && map.getView().getZoom() >= 10) {
+        TextInhoud = feature.get('PC4CODE');
+    } else if (map.getView().getZoom() < 10) {
+        TextInhoud = '';
+    }
+
+    return [new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'blue',
+          lineDash: [4],
+          width: 3
+        }),
+        fill: new ol.style.Fill({
+          color: 'rgba(0, 0, 255, 0.1)'
+        }),
+        text: new ol.style.Text({
+            text: TextInhoud, 
+            fill: new ol.style.Fill({
+                color: 'rgba(0, 0, 255, 1)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: 'rgba(0, 0, 0, 1)',
+                width: 1
+            })
+        })
+  })]; 
+};
+
 //definitie stylesKLAK
 var stylesKLAK = {
     'Point': [new ol.style.Style({
@@ -311,7 +344,7 @@ var MSRLayer = new ol.layer.Vector({
 var PC4Layer = new ol.layer.Vector({
     source: vectorSourcePC4,
     projection: 'EPSG:4326',
-    style: styleFunction,
+    style: styleFunctionPC4,
     name: 'PC4_gebieden',
     minResolution: 4
 });
@@ -861,12 +894,12 @@ $(document).ready(function() {
             
             //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
             var FoundMarker = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.transform([placemark_lon, placemark_lat], 'EPSG:4326', 'EPSG:3857')),
+                geometry: new ol.geom.Point(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857')),
   name: AdresVeld.value
             });
-           selectedSourceAansl.addFeatures(FoundMarker);
+           selectedSourceAansl.addFeatures([FoundMarker]);
            
-           map.getView().setCenter(ol.proj.transform([placemark_lon, placemark_lat], 'EPSG:4326', 'EPSG:3857'));
+           map.getView().setCenter(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857'));
         
        });
     });
