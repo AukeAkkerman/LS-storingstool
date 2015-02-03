@@ -53,6 +53,8 @@ function maxExtent(inputArray) {
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
+
+
 var projection = ol.proj.get('EPSG:3857');
 
 var Alkmaar = ol.proj.transform([4.75355239868168, 52.62976657605367], 'EPSG:4326', 'EPSG:3857');
@@ -183,9 +185,9 @@ var styleSelected = {
         image: new ol.style.Circle({
             radius: 6,
             fill: new ol.style.Fill({
-                color   : 'rgba(200,0,50,0.6)'
+                color   : 'rgba(0,0,100,0.6)'
             }),
-            stroke: new ol.style.Stroke({color: 'red', width: 1})
+            stroke: new ol.style.Stroke({color: 'red', width: 3})
             })
     })],
     'LineString': [new ol.style.Style({
@@ -231,9 +233,8 @@ var vectorSourceKabels = new ol.source.GeoJSON({
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/Aansluitingen_inclslim(3).GeoJSON'
+    url: 'data/Aansluitingen_inclslim.GeoJSON'
 });
-
 
 var selectedSourceAansl = new ol.source.Vector({
     projection: 'EPSG:3857'
@@ -343,6 +344,10 @@ var map = new ol.Map({
   }),
 });
 
+//Voor de sidebar
+
+var sidebar = $('#sidebar').sidebar();
+
 //Stuk hieronder is voor de tooltips
 var info = $('#info');
 info.tooltip({
@@ -357,7 +362,7 @@ info.tooltip({
 
 var displayFeatureInfo_MouseOver = function(pixel) {
   info.css({
-    left: (pixel[0] + 10) + 'px',
+    left: (pixel[0]) + 'px',
     top: (pixel[1]) + 'px'
   });
   var featureInfo = map.forEachFeatureAtPixel(pixel, function(feature, layer) {
@@ -417,9 +422,9 @@ map.addInteraction(selectMouseClick);
 $(map.getViewport()).on('click', function(evt) {
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
-    $('#KlakInfo').empty();
-    $('#example').empty();
-   //$('#example').dataTable().Destroy(); // voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
+//    $('#KlakInfo').empty();
+//    $('#example').empty();
+    //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
 
 
     
@@ -446,7 +451,59 @@ function createCircleOutOverlay(position, WelNiet) {
 // Handle visibility control
 
 $(document).ready(function() {    
+    
+    //export to CSV functie
+    function exportTableToCSV($table, filename) {
 
+        var $rows = $table.find('tr:has(td)'),
+
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            tmpColDelim = String.fromCharCode(11), // vertical tab character
+            tmpRowDelim = String.fromCharCode(0), // null character
+
+            // actual delimiter characters for CSV format
+            colDelim = '","',
+            rowDelim = '"\r\n"',
+
+            // Grab text from table into CSV formatted string
+            csv = '"' + $rows.map(function (i, row) {
+                var $row = $(row),
+                    $cols = $row.find('td');
+
+                return $cols.map(function (j, col) {
+                    var $col = $(col),
+                        text = $col.text();
+
+                    return text.replace('"', '""'); // escape double quotes
+
+                }).get().join(tmpColDelim);
+
+            }).get().join(tmpRowDelim)
+                .split(tmpRowDelim).join(rowDelim)
+                .split(tmpColDelim).join(colDelim) + '"',
+
+            // Data URI
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        $(this)
+            .attr({
+            'download': filename,
+                'href': csvData,
+                'target': '_blank'
+        });
+    }
+
+    // This must be a hyperlink
+    $('#export').on('click', function (event) {
+        // CSV
+        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
+        
+        // IF CSV, don't do event.preventDefault() or return false
+        // We actually need this to be a typical hyperlink
+    });
+
+    
     $('#toggle-ls-storingen').on('click', function () {
         KLAKLayer.setVisible(!KLAKLayer.getVisible());
     });
@@ -613,9 +670,6 @@ $(document).ready(function() {
         if(selectMouseClick) {
             var ExtentArray = [];
             var FeatureArray = [];
-            var SMArray = [];
-            var SMOffArray = [];
-            var KlakArray = []; 
             for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
@@ -631,16 +685,10 @@ $(document).ready(function() {
                                 if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
                                     ExtentArray.push(featureAansl2.getGeometry().getExtent());
                                     FeatureArray.push(featureAansl2);
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
-                                    SMArray.push(featureAansl2);}
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
-                                    SMOffArray.push(featureAansl2);}                                    
-
                                 }
                             });
                         }
                     }); 
-                
                 }
                 if (ExtentArray.length != 0) {
                 selectedSourceAansl.addFeatures(FeatureArray);
@@ -650,58 +698,25 @@ $(document).ready(function() {
                 });
                 map.beforeRender(pan);
                 var NewExtent = maxExtent(ExtentArray);
+                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
+                    for(var k=0; k<NewExtent.length; k++) {
+                        if(k == 0 || k == 1){
+                            NewExtent[k] *= (1/1.000002);
+                        } else {
+                            NewExtent[k] *= 1.000002;
+                        }
+                    }
                 map.getView().fitExtent(NewExtent, map.getSize());
 
-                //Aantal KLAK meldingen op hoofdleiding
-                var KlakArray = [];
-                for (var j=0; j< FeatureArray.length; j++) {
-                var features = FeatureArray;
-                var Aansluiting = features[j];
-                var ARI = Aansluiting.get("ARI_ADRES");
-            
-                vectorSourceKLAK.forEachFeature(function(featureKlak){
-                if (featureKlak.get("PC") + featureKlak.get("NR") + " " == ARI) {
-                    KlakArray.push(featureKlak);
-                }
-                });
-                 }
-                    
-                //Percentage kans op LS storing berekenen
-             
-                if (KlakArray.length > 1){
-                var Kans = 0.95;
-                } else if(KlakArray.length == 1 && SMArray.length == 0){
-                    Kans = 0.5;
-                } else if(KlakArray.length == 1 && SMOffArray.length != 0){
-                    Kans = 0.5 + 0.5*(1-0.25/SMOffArray.length);
-                } else {
-                    Kans = 0.5;
-                }
-                    
-                    
-                    
                 //Vervolgens informatie toevoegen op basis van de gegevens
                 var KlakMeldingInfo = document.getElementById('KlakInfo');
                 var content = "<b>Storings analyse</b>"
                 content += "<table>"
-                content += '<tr><td>' + 'Aantal KLAK meldingen op kabel </td><td>' +  KlakArray.length + '</td></tr>';
                 content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
-                content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  SMArray.length + '</td></tr>';
-                content += '<tr><td>' + 'Waarvan offline </td><td> ' +  SMOffArray.length + '</td></tr>';
-                content += '<tr><td>' + 'kans op LS storing </td><td> ' +  Kans*100 + ' % </td></tr>';    
-                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';    
+                content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  'Nog onbekend' + '</td></tr>';
+                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';
                 content += "</table>"
                 KlakMeldingInfo.innerHTML = content;   
-                
-                
-                    
-                    
-                // MSR informatie erbij zoeken
-                
-                    
-                    
-                    
-                    
                     
                      //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                     var InfoGestAans = document.getElementById('example');
@@ -721,26 +736,21 @@ $(document).ready(function() {
                     InfoGestAans.innerHTML = content;
                     //opmaak voor de lijst met gestoorde aansluitingen      
                     
-                    $(document).ready(function() {
-                        $('#example').DataTable( {
-                                    "scrollY":        "300px",
-                                    "scrollCollapse": true,
-                                    "paging":         false,
-                                    "retrieve":        true, 
-                                    "order": [[ 2, "desc" ]]
-                        });
-                        }); 
-                        } }else {
+                    $('#example').DataTable( {
+//                                "scrollY":        "500px",
+                                "autoWidth":      true,
+                                "scrollCollapse": true,
+                                "paging":         false,
+                                "retrieve":        true, 
+                                "order": [[ 2, "desc" ]]
+                    });
+                    //vervolgens de tabbar openen waar de gegevens instaan
+                    sidebar.open("storingsgegevens")
+        } }else {
          window.alert("You have not selected anything");
         }
 
 });
-    
-                    
-                  
-            
-
- 
     
     $('#Help').on('click', function(){
         window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
@@ -784,139 +794,103 @@ $(document).ready(function() {
          window.alert("You have not selected anything");
         }
     });
+    
+    $('#lijst-gest-aansl').on('click', function(){
+        var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
+        // de aansluitings features weer ophalen    
+            if(selectMouseClick) {
+                    var FeatureArray = [];
+                    for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                        //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                        var features = selectMouseClick.getFeatures();
+                        var selectedFeature = features.item(k);
+                        var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+            //            window.alert(ARI);
+                        //Find corresponding name in other layer
+                       vectorSourceAansl.forEachFeature(function(featureAansl){
+                            if (featureAansl.get("ARI_ADRES") == ARI) {
+                                var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                                //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                                    vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                        if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                                            FeatureArray.push(featureAansl2);
+                                        }
+                                    });
+                                }
+                            }); 
+                        }
+
+                   //Vervolgens informatie over geselecteerde aansluitingen weergeven
+//                    CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
+//                    var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
+                    CompensatieWindow.document.write("<table id='comptab'>");
+                    var CompensatieTabel = CompensatieWindow.document.getElementById('comptab');
+                    var content = "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
+
+                    //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+                    for(var i = 0; i < FeatureArray.length; i++){
+                    var TijdKlak = selectedFeature.get("Geregistreerd_op");
+                    var EAN = FeatureArray[i].get("EAN");
+                    var Functie = FeatureArray[i].get("FUNCTIE");    
+                    var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
+                    var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
+                    content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                    }
+                    content += "</table>"
+                    CompensatieTabel.innerHTML = content;
+
+        //hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
+//                    CompensatieWindow.document.getElementById('#comptab').DataTable( {
+                    CompensatieTabel.DataTable( {
+
+                                "paging":         false,
+                                "retrieve":        true, 
+                                "order": [[ 2, "desc" ]]
+                                }); 
+                }else {
+                 window.alert("You have not selected anything");
+                }
+        });
+    
+    $("#zoekadres").on('click', function() {
+       var AdresVeld = $("#adreszoeker") 
+       $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
+            var FoundExtent = data[0].boundingbox;
+            var placemark_lat = data[0].lat;
+            var placemark_lon = data[0].lon;
+            
+            //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
+            var FoundMarker = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.transform([placemark_lon, placemark_lat], 'EPSG:4326', 'EPSG:3857')),
+  name: AdresVeld.value
+            });
+           selectedSourceAansl.addFeatures(FoundMarker);
+           
+           map.getView().setCenter(ol.proj.transform([placemark_lon, placemark_lat], 'EPSG:4326', 'EPSG:3857'));
+        
+       });
+    });
 }); 
 
 //download PNG module werkt nog niet
-/*var exportPNGElement = document.getElementById('export-png');
-
-if ('download' in exportPNGElement) {
-  exportPNGElement.addEventListener('click', function(e) {
-    map.once('postcompose', function(event) {
-      var canvas = event.context.canvas;
-      exportPNGElement.href = canvas.toDataURL('image/png');
-    });
-    map.renderSync();
-  }, false);
-} else {
-    alert('werkt niet gek')
-  var info = document.getElementById('no-download');
-  *
-   * display error message
-   
-  info.style.display = '';
-}*/
+//var exportPNGElement = document.getElementById('export-png');
+//
+//if ('download' in exportPNGElement) {
+//  exportPNGElement.addEventListener('click', function(e) {
+//    map.once('postcompose', function(event) {
+//      var canvas = event.context.canvas;
+//      exportPNGElement.href = canvas.toDataURL('image/png');
+//    });
+//    map.renderSync();
+//  }, false);
+//} else {
+//    alert('werkt niet gek')
+// /* var info = document.getElementById('no-download');
+//  *
+//   * display error message
+//   
+//  info.style.display = '';*/
+//}
 
 
 //Lijst opleveren voor storingscompensatie
-$('#lijst-gest-aansl').on('click', function(){
-var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
-// de aansluitings features weer ophalen    
-    if(selectMouseClick) {
-            var ExtentArray = [];
-            var FeatureArray = [];
-            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
-                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-                var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(k);
-                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-    //            window.alert(ARI);
-                //Find corresponding name in other layer
-               vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
-                            vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
-                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
-                                    FeatureArray.push(featureAansl2);
-                                }
-                            });
-                        }
-                    }); 
-                }
-    
-           //Vervolgens informatie over geselecteerde aansluitingen weergeven
-            CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
-            var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
-            var content = "<table class='display' id='comptab'>"
-            content += "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
-                    
-            //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
-            for(var i = 0; i < FeatureArray.length; i++){
-            var TijdKlak = selectedFeature.get("Geregistreerd_op");
-            var EAN = FeatureArray[i].get("EAN");
-            var Functie = FeatureArray[i].get("FUNCTIE");    
-            var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
-            var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
-            content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
-            }
-            content += "</table>"
-            CompensatieTabel.innerHTML = content;
-                   
-//hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
-           
-           $('#comptab').DataTable( {
-                        "paging":         false,
-                        "retrieve":        true, 
-                        "order": [[ 2, "desc" ]]
-                        });
-        }else {
-         window.alert("You have not selected anything");
-        }
-});
-
-//export to CSV functie
-$(document).ready(function () {
-
-    function exportTableToCSV($table, filename) {
-
-        var $rows = $table.find('tr:has(td)'),
-
-            // Temporary delimiter characters unlikely to be typed by keyboard
-            // This is to avoid accidentally splitting the actual contents
-            tmpColDelim = String.fromCharCode(11), // vertical tab character
-            tmpRowDelim = String.fromCharCode(0), // null character
-
-            // actual delimiter characters for CSV format
-            colDelim = '","',
-            rowDelim = '"\r\n"',
-
-            // Grab text from table into CSV formatted string
-            csv = '"' + $rows.map(function (i, row) {
-                var $row = $(row),
-                    $cols = $row.find('td');
-
-                return $cols.map(function (j, col) {
-                    var $col = $(col),
-                        text = $col.text();
-
-                    return text.replace('"', '""'); // escape double quotes
-
-                }).get().join(tmpColDelim);
-
-            }).get().join(tmpRowDelim)
-                .split(tmpRowDelim).join(rowDelim)
-                .split(tmpColDelim).join(colDelim) + '"',
-
-            // Data URI
-            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
-
-        $(this)
-            .attr({
-            'download': filename,
-                'href': csvData,
-                'target': '_blank'
-        });
-    }
-
-    // This must be a hyperlink
-    $('#export').on('click', function (event) {
-        // CSV
-        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
-        
-        // IF CSV, don't do event.preventDefault() or return false
-        // We actually need this to be a typical hyperlink
-    });
-});
-
-
