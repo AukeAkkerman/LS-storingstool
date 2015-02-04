@@ -154,6 +154,10 @@ table.here_tabel {
     paddign: 10px;
 }
 
+/*table#example th, td {
+  font-size:11px
+}*/
+
 /* Stuk om de circleout mogelijk te maken */
 
 /* CIRCLE OUT voor slimme meters die NIET werken */
