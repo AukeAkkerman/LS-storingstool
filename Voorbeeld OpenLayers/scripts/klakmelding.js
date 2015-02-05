@@ -1,4 +1,4 @@
-//EERST ALLE HELPFUNCTIES DEFINIEEREN
+﻿//EERST ALLE HELPFUNCTIES DEFINIEEREN
 //Script om alle helpfuncties in klakmelding.js op te slaan, voor overzichtelijkheid
 
 function IsNumeric(input)
@@ -557,7 +557,7 @@ $(document).ready(function() {
         KabelLayerMS.setVisible(!KabelLayerMS.getVisible());
     });
     
-    $("#toggle-ls-aansl").on('click', function() {
+    $("#toggle-msr").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
     });
     
