@@ -480,6 +480,13 @@ function createCircleOutOverlay(position, WelNiet) {
 
 $(document).ready(function() {    
     
+    // grey out text of elements that are named 'disabled'
+    $( "li" ).each(function() {
+        if($(this).find("#disabled").has("[disabled]")){
+          $(this).find("#disabled").css("color", "#dadada");
+        }
+    });
+    
     //export to CSV functie
     function exportTableToCSV($table, filename) {
 
@@ -552,7 +559,7 @@ $(document).ready(function() {
         KabelLayerMS.setVisible(!KabelLayerMS.getVisible());
     });
     
-    $("#toggle-ls-aansl").on('click', function() {
+    $("#toggle-msr").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
     });
     
