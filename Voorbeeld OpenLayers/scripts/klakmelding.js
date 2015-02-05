@@ -1,4 +1,4 @@
-﻿//EERST ALLE HELPFUNCTIES DEFINIEEREN
+//EERST ALLE HELPFUNCTIES DEFINIEEREN
 //Script om alle helpfuncties in klakmelding.js op te slaan, voor overzichtelijkheid
 
 function IsNumeric(input)
@@ -484,6 +484,13 @@ function createCircleOutOverlay(position, WelNiet) {
 // Handle visibility control
 
 $(document).ready(function() {    
+    
+    // grey out text of elements that are named 'disabled'
+    $( "li" ).each(function() {
+        if($(this).find("#disabled").has("[disabled]")){
+          $(this).find("#disabled").css("color", "#dadada");
+        }
+    });
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
