@@ -437,11 +437,6 @@ var displayFeatureInfo_MouseOver = function(pixel) {
   }
 };
 
-//defineren van een mouseover event
-$(map.getViewport()).on('mousemove', function(evt) {
-  displayFeatureInfo_MouseOver(map.getEventPixel(evt.originalEvent));
-});
-
 
 //toevoegen van selectiekader
 var select = null;
@@ -559,6 +554,17 @@ $(document).ready(function() {
     
     $("#toggle-ls-aansl").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
+    });
+    
+    $("#toggle-info-box").change(function(){
+        if($('#toggle-info-box').is(':checked')) {
+        //defineren van een mouseover event
+            $(map.getViewport()).on('mousemove', function(evt) {
+                displayFeatureInfo_MouseOver(map.getEventPixel(evt.originalEvent));
+            });
+        } else {
+            $(map.getViewport()).unbind('mousemove');
+        }
     });
     
     $("#ping-sm-afstand").on('click', function(){
