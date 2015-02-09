@@ -9,7 +9,6 @@
     <link href="http://openlayers.org/en/v3.1.1/css/ol.css" rel="stylesheet" type="text/css">
     <link href="bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="styles/layout.css" rel="stylesheet" type="text/css">
-<!--    <link href="styles/jquery.dataTables.css" rel="stylesheet" type="text/css">-->
     <link href="styles/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
     <link href="styles/jquery.dataTables_themeroller.css" rel="stylesheet" type="text/css">
     <link href="styles/ol3-sidebar.min.css" rel="stylesheet" type="text/css">
@@ -20,9 +19,7 @@
     <script src="scripts/proj4.js"></script>
     <script src="scripts/jquery.dataTables.js"></script>
     <script src="scripts/jquery-sidebar.min.js"></script>
-    <!--
-   <script src="scripts/jquery.js"></script>
--->
+
     <script src="scripts/jquery.dataTables.min.js"></script>
 
 </head>
@@ -104,7 +101,7 @@
                       <li><a href="#" tabidex="-1" id="ping-sm-aan-kabel">Ping slimme meters aan kabel</a></li>
                       <li><a href="#" tabidex="-1" id="ping-sm-afstand">Ping Slimme Meters binnen bepaalde afstand</a></li>
                     <li><a href="#" tabindex="-1" id="toggle-twitter-feeds">Analyseer Twitterfeeds rondom storingen</a></li>
-                    <li><a href="#" tabindex="-1">Tool 4</a></li>
+                    <li><a href="#" tabindex="-1" id="MSR-onderliggen-aansl">Toon aansluitingen MSR</a></li>
                   </ul>
                 </li>
             <li class="dropdown"><a href="#" data-toggle="dropdown">Aansturen Monteur</a>
@@ -158,11 +155,6 @@
         </div>
     </div>
 
-    <!--
-    <table class="tb01" width="100%">
-    <tr>
-    <td>
-    -->
     <div class="container-map-sidebar">
         <div id="sidebar" class="sidebar collapsed">
             <!-- Nav tabs -->
@@ -174,7 +166,7 @@
                 <li><a href="#storingsgegevens" role="tab"><i class="fa fa-tag"></i></a></li>
             </ul>
 
-            <!-- Tab panes -->
+        
             <div class="sidebar-content active">
                 <div class="sidebar-pane" id="home">
                     <h1>sidebar-v2</h1>
@@ -203,14 +195,7 @@
             </div>
         </div>
         <div id="map" class="sidebar-map"><div id="info"></div></div>
-    <!--
-    </td>
-    <td>
-    <table id="KlakInfo" width="100%"></table><br><br>
-    <table class="display" cellspacing="0" id="example"></table>
-    </td></tr>
-    </table>  
-    -->
+
     </div>
     </div>
     <script src="http://openlayers.org/en/v3.1.1/build/ol.js"></script>
