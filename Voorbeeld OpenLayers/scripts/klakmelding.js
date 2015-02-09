@@ -487,6 +487,9 @@ $(document).ready(function() {
         }
     });
     
+    //initialise history slider
+    $("#historyslider").slider({});
+    
     //export to CSV functie
     function exportTableToCSV($table, filename) {
 
