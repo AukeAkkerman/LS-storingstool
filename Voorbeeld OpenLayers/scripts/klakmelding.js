@@ -49,17 +49,11 @@ function maxExtent(inputArray) {
     return resultArray;
 }
 
-function getData(array, type, val) {
-    return array.filter(function (el) {
-        return el[type] === val;
-    });
-}
 
-//////////////
-// Overige gegevens
-//////////////
+//Voorbeeldscript voor Map met mouseover
+//TODO:
 
-//var Werkzaamheden = 
+
 
 var projection = ol.proj.get('EPSG:3857');
 
@@ -265,16 +259,14 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
-//    defaultProjection: 'EPSG:28992',
     projection: 'EPSG:3857',
     url: 'data/NRG_LS_Kabels.GeoJSON'
 });
 
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
-    defaultProjection: 'EPSG:28992',
     projection: 'EPSG:3857',
-    url: 'data/Aansluitingen_inclslim(2).GeoJSON'
+    url: 'data/Aansluitingen_inclslim(3).GeoJSON'
 });
 
 var selectedSourceAansl = new ol.source.Vector({
@@ -451,7 +443,7 @@ var select = null;
 var selectMouseClick = new ol.interaction.Select({
     condition: ol.events.condition.click,
     style: bluePhone,
-    layers: [KLAKLayer]
+    layers: [KLAKLayer, MSRLayer]
 });
 map.addInteraction(selectMouseClick);
 
@@ -484,7 +476,7 @@ function createCircleOutOverlay(position, WelNiet) {
     });
 }
 
-// Handle visibility control
+
 
 $(document).ready(function() {    
     
@@ -494,6 +486,9 @@ $(document).ready(function() {
           $(this).find("#disabled").css("color", "#dadada");
         }
     });
+    
+    //initialise history slider
+    $("#historyslider").slider({});
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
@@ -547,6 +542,8 @@ $(document).ready(function() {
     });
 
     
+ // Handle visibility control   
+//aan en uitzetten van layers
     $('#toggle-ls-storingen').on('click', function () {
         KLAKLayer.setVisible(!KLAKLayer.getVisible());
     });
@@ -729,6 +726,7 @@ $(document).ready(function() {
             var SMArray = [];
             var SMOffArray = [];
             var KlakArray = []; 
+            var MSRArray = [];
             for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
@@ -799,6 +797,14 @@ $(document).ready(function() {
                     Kans = 0.5;
                 }
                     
+                // MSR informatie erbij zoeken
+                    
+                var BehuizingsNR = FeatureArray[1].get("NUMMER_BEHUIZING");
+                vectorSourceMSR.forEachFeature(function(featureMSR){
+                if (featureMSR.get("NUMMER_BEHUIZING") == BehuizingsNR){
+                    MSRArray.push(featureMSR);
+                }
+                });
                     
                     
                 //Vervolgens informatie toevoegen op basis van de gegevens
@@ -812,12 +818,23 @@ $(document).ready(function() {
                 content += '<tr><td>' + 'kans op LS storing </td><td> ' +  Kans*100 + ' % </td></tr>';    
                 content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';    
                 content += "</table>"
+                content += "<br>"
+                content += "<b>Middenspanningsruimte</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Ruimtenummer </td><td>' + BehuizingsNR + '</td></tr>';
+                content += '<tr><td>' + 'Lokale naam </td><td>' + MSRArray[0].get("LOKALE_NAAM") + '</td></tr>';
+                content += '<tr><td>' + 'Looproute/rijroute </td><td>' + MSRArray[0].get("LOOPROUTE_RIJROUTE") + '</td></tr>';
+                content += '<tr><td>' + 'Gebouw toepassing </td><td>' + MSRArray[0].get("GEBOUWTOEPASSING") + '</td></tr>';
+                content += '<tr><td>' + 'Eigenaar </td><td>' + MSRArray[0].get("EIGENAAR") + '</td></tr>';
+                content += '<tr><td>' + 'Adres ruimte </td><td>' + MSRArray[0].get("STRAATNAAM") + " " + MSRArray[0].get("HUISNUMMER") + '</td></tr>';
+                content += '<tr><td>' + 'Sleutelkastje aanwezig? </td><td>' + MSRArray[0].get("SLEUTELKASTJE_") + '</td></tr>';
+                content += '</table>'
                 KlakMeldingInfo.innerHTML = content;   
                 
                 
                     
                     
-                // MSR informatie erbij zoeken
+
                 
                     
                     
@@ -977,3 +994,76 @@ $(document).ready(function() {
        });
     });
 }); 
+
+//download PNG module werkt nog niet
+//var exportPNGElement = document.getElementById('export-png');
+//
+//if ('download' in exportPNGElement) {
+//  exportPNGElement.addEventListener('click', function(e) {
+//    map.once('postcompose', function(event) {
+//      var canvas = event.context.canvas;
+//      exportPNGElement.href = canvas.toDataURL('image/png');
+//    });
+//    map.renderSync();
+//  }, false);
+//} else {
+//    alert('werkt niet gek')
+// /* var info = document.getElementById('no-download');
+//  *
+//   * display error message
+//   
+//  info.style.display = '';*/
+//}
+
+
+//MSR selecteren en onderliggende aansluitingen weergeven
+    $('#MSR-onderliggen-aansl').on('click', function(){
+        
+        if(selectMouseClick) {
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var Behuizingsnummer = selectedFeature.get("NUMMER_BEHUIZING");
+
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("NUMMER_BEHUIZING") == Behuizingsnummer) {
+                        var Behuizingsnummer_tevinden = featureAansl.get("NUMMER_BEHUIZING");
+                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
+                            vectorSourceAansl.forEachFeature(function(featureAansl2){
+                                if (featureAansl2.get("NUMMER_BEHUIZING") == Behuizingsnummer_tevinden){
+                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
+                                    FeatureArray.push(featureAansl2);
+                                                                    
+                                }
+                            });
+                        }
+                    }); 
+                
+                }
+        if (ExtentArray.length != 0) {
+                selectedSourceAansl.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
+                    for(var k=0; k<NewExtent.length; k++) {
+                        if(k == 0 || k == 1){
+                            NewExtent[k] *= (1/1.000002);
+                        } else {
+                            NewExtent[k] *= 1.000002;
+                        }
+                    }
+                map.getView().fitExtent(NewExtent, map.getSize());
+        
+        
+        
+        }} else {  window.alert("You have not selected anything");
+        }
+    });
