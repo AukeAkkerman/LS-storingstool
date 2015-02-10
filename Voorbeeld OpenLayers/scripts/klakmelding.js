@@ -49,11 +49,17 @@ function maxExtent(inputArray) {
     return resultArray;
 }
 
+function getData(array, type, val) {
+    return array.filter(function (el) {
+        return el[type] === val;
+    });
+}
 
-//Voorbeeldscript voor Map met mouseover
-//TODO:
+//////////////
+// Overige gegevens
+//////////////
 
-
+//var Werkzaamheden = 
 
 var projection = ol.proj.get('EPSG:3857');
 
@@ -259,14 +265,16 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
+//    defaultProjection: 'EPSG:28992',
     projection: 'EPSG:3857',
     url: 'data/NRG_LS_Kabels.GeoJSON'
 });
 
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
+    defaultProjection: 'EPSG:28992',
     projection: 'EPSG:3857',
-    url: 'data/Aansluitingen_inclslim.GeoJSON'
+    url: 'data/Aansluitingen_inclslim(2).GeoJSON'
 });
 
 var selectedSourceAansl = new ol.source.Vector({
@@ -969,26 +977,3 @@ $(document).ready(function() {
        });
     });
 }); 
-
-//download PNG module werkt nog niet
-//var exportPNGElement = document.getElementById('export-png');
-//
-//if ('download' in exportPNGElement) {
-//  exportPNGElement.addEventListener('click', function(e) {
-//    map.once('postcompose', function(event) {
-//      var canvas = event.context.canvas;
-//      exportPNGElement.href = canvas.toDataURL('image/png');
-//    });
-//    map.renderSync();
-//  }, false);
-//} else {
-//    alert('werkt niet gek')
-// /* var info = document.getElementById('no-download');
-//  *
-//   * display error message
-//   
-//  info.style.display = '';*/
-//}
-
-
-//Lijst opleveren voor storingscompensatie
