@@ -166,6 +166,21 @@ if (feature.get("type")) {
 };
 
 
+var stylesClick = {
+    'Point': [bluePhone],
+    'Polygon': [new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'red',
+          lineDash: [4],
+          width: 3
+        })
+    })]
+};
+
+styleFunctionClick = function(feature, resolution) {
+    return stylesClick[feature.getGeometry().getType()]; 
+};
+
 var styleFunctionPC4 = function(feature, resolution) {
     
     var TextInhoud = feature.get('PC4CODE') + '\n ' + feature.get('PC4NAAM');
@@ -207,6 +222,7 @@ var stylesKLAK = {
         }))
     })]
 };
+
 
 var styleFunctionKLAK = function(feature, resolution) {
     return stylesKLAK[feature.getGeometry().getType()]; 
@@ -442,7 +458,7 @@ var displayFeatureInfo_MouseOver = function(pixel) {
 var select = null;
 var selectMouseClick = new ol.interaction.Select({
     condition: ol.events.condition.click,
-    style: bluePhone,
+    style: styleFunctionClick,
     layers: [KLAKLayer, MSRLayer]
 });
 map.addInteraction(selectMouseClick);
@@ -486,6 +502,9 @@ $(document).ready(function() {
           $(this).find("#disabled").css("color", "#dadada");
         }
     });
+    
+    //initialise history slider
+    $("#historyslider").slider({});
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
@@ -990,6 +1009,45 @@ $(document).ready(function() {
         
        });
     });
+    
+    //MSR selecteren en onderliggende aansluitingen weergeven
+    $('#MSR-onderliggen-aansl').on('click', function(){
+        if(selectMouseClick) {
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var Behuizingsnummer = selectedFeature.get("NUMMER_BEHUIZING");
+
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("NUMMER_BEHUIZING") == Behuizingsnummer) {
+                            ExtentArray.push(featureAansl.getGeometry().getExtent());
+                            FeatureArray.push(featureAansl);
+                    }
+               });
+        if (ExtentArray.length != 0) {
+                selectedSourceAansl.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
+                    for(var k=0; k<NewExtent.length; k++) {
+                        if(k == 0 || k == 1){
+                            NewExtent[k] *= (1/1.000002);
+                        } else {
+                            NewExtent[k] *= 1.000002;
+                        }
+                    }
+                map.getView().fitExtent(NewExtent, map.getSize());
+        }}} else {  window.alert("You have not selected anything");
+    }
+    });
 }); 
 
 //download PNG module werkt nog niet
@@ -1013,54 +1071,4 @@ $(document).ready(function() {
 //}
 
 
-//MSR selecteren en onderliggende aansluitingen weergeven
-    $('#MSR-onderliggen-aansl').on('click', function(){
-        
-        if(selectMouseClick) {
-            var ExtentArray = [];
-            var FeatureArray = [];
-            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
-                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-                var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(k);
-                var Behuizingsnummer = selectedFeature.get("NUMMER_BEHUIZING");
 
-                //Find corresponding name in other layer
-               vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("NUMMER_BEHUIZING") == Behuizingsnummer) {
-                        var Behuizingsnummer_tevinden = featureAansl.get("NUMMER_BEHUIZING");
-                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
-                            vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                if (featureAansl2.get("NUMMER_BEHUIZING") == Behuizingsnummer_tevinden){
-                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
-                                    FeatureArray.push(featureAansl2);
-                                                                    
-                                }
-                            });
-                        }
-                    }); 
-                
-                }
-        if (ExtentArray.length != 0) {
-                selectedSourceAansl.addFeatures(FeatureArray);
-                var pan = ol.animation.pan({
-                    duration: 1000,
-                    source: /** @type {ol.Coordinate} */ (view.getCenter())
-                });
-                map.beforeRender(pan);
-                var NewExtent = maxExtent(ExtentArray);
-                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
-                    for(var k=0; k<NewExtent.length; k++) {
-                        if(k == 0 || k == 1){
-                            NewExtent[k] *= (1/1.000002);
-                        } else {
-                            NewExtent[k] *= 1.000002;
-                        }
-                    }
-                map.getView().fitExtent(NewExtent, map.getSize());
-        
-        
-        
-        }} else {  window.alert("You have not selected anything");
-        }
-    });
