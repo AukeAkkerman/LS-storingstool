@@ -50,6 +50,21 @@ function maxExtent(inputArray) {
 }
 
 
+function eliminateDuplicates(arr) {
+  var i,
+      len=arr.length,
+      out=[],
+      obj={};
+ 
+  for (i=0;i<len;i++) {
+    obj[arr[i]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  return out;
+}
+
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
@@ -260,13 +275,13 @@ var styleSelected = {
     })],
     'LineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'rgba(0,20,147,0.8)',
+      color: 'rgba(250,165,0,1)',
       width: 6
     })
   })],
       'MultiLineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'rgba(0,20,147,0.8)',
+      color: 'rgba(250,165,0,1)',
       width: 6
     })
   })]
@@ -1063,6 +1078,23 @@ $(document).ready(function() {
                             FeatureArray.push(featureAansl);
                     }
                });
+            }
+            var KabelArray = [];
+            for (var k=0; k<FeatureArray.length; k++){
+                KabelArray.push(FeatureArray[k].get("HOOFDLEIDING"));
+            }
+            //Nu unieke waardes uit de KabelArray halen
+            KabelArrayUniek = eliminateDuplicates(KabelArray);
+            for (var k=0; k<KabelArrayUniek.length; k++){
+                var HoofdleidingNr = KabelArrayUniek[k];
+                vectorSourceKabels.forEachFeature(function(featureKabel) {
+                    if (featureKabel.get("HOOFDLEIDING") == HoofdleidingNr){
+    //                            KabelID.set("type", "LineStringSelected");
+                        ExtentArray.push(featureKabel.getGeometry().getExtent());
+                        FeatureArray.push(featureKabel);                            
+                    }
+                });
+            }
         if (ExtentArray.length != 0) {
                 selectedSourceAansl.addFeatures(FeatureArray);
                 var pan = ol.animation.pan({
@@ -1080,7 +1112,7 @@ $(document).ready(function() {
                         }
                     }
                 map.getView().fitExtent(NewExtent, map.getSize());
-        }}} else {  window.alert("You have not selected anything");
+        }} else {  window.alert("You have not selected anything");
     }
     
     sidebar.open("storingsgegevens")
