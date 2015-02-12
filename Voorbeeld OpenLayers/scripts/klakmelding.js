@@ -96,8 +96,8 @@ var styles = {
   })],
   'MultiLineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'green',
-      width: 1
+      color: 'rgba(200,50,50,0.8)',
+      width: 2
     })
   })],
   'MultiPoint': [new ol.style.Style({
@@ -148,12 +148,31 @@ var styles = {
     })
   })]
 };
+
+
+//MSO lokatie style
+var MSOstyles = {
+  'Point': [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({
+                color: 'rgba(0,0,0,0.6)'
+            }),
+            stroke: new ol.style.Stroke({color: 'green', width: 1})
+            })
+    })]
+};
+var MSOStylesFunction = function(feature, resolution) {
+    return MSOstyles[feature.getGeometry().getType()]; 
+};
+
 //SelectieStyle
 var bluePhone = new ol.style.Style({
     image: new ol.style.Icon(({
                             src: 'Klakmelding/telefoon_2.png'
                         }))
 });
+
 //Styles voor de verschillende lagen
 var styleFunction = function(feature, resolution) {
 //      return styles[feature.getGeometry().getType()];
@@ -196,10 +215,10 @@ var styleFunctionPC4 = function(feature, resolution) {
         stroke: new ol.style.Stroke({
           color: 'blue',
           lineDash: [4],
-          width: 3
+          width: 1
         }),
         fill: new ol.style.Fill({
-          color: 'rgba(0, 0, 255, 0.1)'
+          color: 'rgba(0, 0, 255, 0.05)'
         }),
         text: new ol.style.Text({
             text: TextInhoud, 
@@ -244,6 +263,12 @@ var styleSelected = {
       color: 'rgba(0,20,147,0.8)',
       width: 6
     })
+  })],
+      'MultiLineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(0,20,147,0.8)',
+      width: 6
+    })
   })]
 };
 
@@ -276,13 +301,13 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/NRG_LS_Kabels.GeoJSON'
+    url: 'data/MV_NRG_LS_KABELS.GeoJSON'
 });
 
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/Aansluitingen_inclslim(3).GeoJSON'
+    url: 'data/MV_NRG_LS_AANSLUITING.GeoJSON'
 });
 
 var selectedSourceAansl = new ol.source.Vector({
@@ -296,13 +321,19 @@ var selectedSourceKabels = new ol.source.Vector({
 //MS kabels inladen
 var vectorSourceKabelsMS = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/NRG_MS_kabel_sel.GeoJSON'
+    url: 'data/MV_NRG_MS_KABELS.GeoJSON'
 });
 
 //MSRen inladen
 var vectorSourceMSR = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/NRG_stationsbehuizing_sel.GeoJSON'
+    url: 'data/MV_NRG_STATIONBEHUIZING.GeoJSON'
+});
+
+//MSR MSO lokatie inladen
+var vectorSourceMSOLoc = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/MV_NRG_STATION_MSO_LOKATIE.GeoJSON'
 });
 
 //PC4 inladen
@@ -326,7 +357,7 @@ var KabelLayer = new ol.layer.Vector({
     projection: 'EPSG:4326',
     style: styleFunction,
     name: 'KabelLayer',
-    maxResolution: 3
+    maxResolution: 1
 });
 
 //Aansluitingen projecteren
@@ -356,13 +387,23 @@ var MSRLayer = new ol.layer.Vector({
     maxResolution: 5
 });
 
+//MSR MSO Lokatie projecteren
+var MSOLocLayer = new ol.layer.Vector({
+    source: vectorSourceMSOLoc,
+    projection: 'EPSG:4326',
+    style: MSOStylesFunction,
+    name: 'MSOLocLayer',
+    maxResolution: 5
+});
+
+
 //PC4en projecteren
 var PC4Layer = new ol.layer.Vector({
     source: vectorSourcePC4,
     projection: 'EPSG:4326',
     style: styleFunctionPC4,
     name: 'PC4_gebieden',
-    minResolution: 4
+    minResolution: 6
 });
 
 //Geselecteerde aansluitingen
@@ -384,7 +425,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -463,7 +504,7 @@ var selectMouseClick = new ol.interaction.Select({
 });
 map.addInteraction(selectMouseClick);
 
-$(map.getViewport()).on('click', function(evt) {
+ $("#deselect-storing").on('click', function() {
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
 //    $('#KlakInfo').empty();
@@ -476,6 +517,7 @@ $(map.getViewport()).on('click', function(evt) {
     for(var i=0; i < map.getOverlays().getLength() ; i++){
     map.removeOverlay(map.getOverlays().item(i));
     }
+    sidebar.close()
 });
 
 function createCircleOutOverlay(position, WelNiet) {
@@ -504,7 +546,7 @@ $(document).ready(function() {
     });
     
     //initialise history slider
-    $("#historyslider").slider({});
+  //  $("#historyslider").slider({});
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
@@ -849,14 +891,7 @@ $(document).ready(function() {
                 
                 
                     
-                    
-
                 
-                    
-                    
-                    
-                    
-                    
                      //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                     var InfoGestAans = document.getElementById('example');
                     var content = "<table>"
@@ -1047,6 +1082,17 @@ $(document).ready(function() {
                 map.getView().fitExtent(NewExtent, map.getSize());
         }}} else {  window.alert("You have not selected anything");
     }
+    
+    sidebar.open("storingsgegevens")
+        
+    var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>MSR analyse</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  FeatureArray.length + '</td></tr>';
+                content += '<tr><td>' + 'Ruimte nummer </td><td> ' +  Behuizingsnummer + '</td></tr>';
+                content += "</table>"  
+                 KlakMeldingInfo.innerHTML = content; 
+        
     });
 }); 
 
