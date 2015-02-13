@@ -182,11 +182,24 @@ var MSOStylesFunction = function(feature, resolution) {
 };
 
 //SelectieStyle
+
 var bluePhone = new ol.style.Style({
-    image: new ol.style.Icon(({
-                            src: 'Klakmelding/telefoon_2.png'
-                        }))
-});
+    image: new ol.style.RegularShape(
+        /** @type {olx.style.RegularShapeOptions} */({
+          fill: new ol.style.Fill({color: 'orange'}),
+          stroke: new ol.style.Stroke({color: 'black', width: 1}),
+          points: 5,
+          radius: 10,
+          radius2: 4,
+          angle: 0
+        }))
+  });
+
+//var bluePhone = new ol.style.Style({
+//    image: new ol.style.Icon(({
+//                            src: 'Klakmelding/telefoon_2.png'
+//                        }))
+//});
 
 //Styles voor de verschillende lagen
 var styleFunction = function(feature, resolution) {
@@ -283,6 +296,16 @@ var styleSelected = {
     stroke: new ol.style.Stroke({
       color: 'rgba(250,165,0,1)',
       width: 6
+    })
+  })],
+  'Polygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'blue',
+      lineDash: [4],
+      width: 3
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(250,165,0,1)'
     })
   })]
 };
@@ -515,7 +538,7 @@ var select = null;
 var selectMouseClick = new ol.interaction.Select({
     condition: ol.events.condition.click,
     style: styleFunctionClick,
-    layers: [KLAKLayer, MSRLayer]
+    layers: [KLAKLayer, MSRLayer, AanslLayer]
 });
 map.addInteraction(selectMouseClick);
 
@@ -757,31 +780,69 @@ $(document).ready(function() {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
                 var selectedFeature = features.item(k);
-                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-    //            window.alert(ARI);
-                //Find corresponding name in other layer
-                vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                        vectorSourceKabels.forEachFeature(function(featureKabel) {
-                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
-    //                            KabelID.set("type", "LineStringSelected");
-                                ExtentArray.push(featureKabel.getGeometry().getExtent());
-                                FeatureArray.push(featureKabel);                            
-                            }
-                        });
-                    } 
+                if (selectedFeature.get("Door")){
+                    var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+        //            window.alert(ARI);
+                    //Find corresponding name in other layer
+                    vectorSourceAansl.forEachFeature(function(featureAansl){
+                        if (featureAansl.get("ARI_ADRES") == ARI) {
+                            var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                            var MSR_nr_aansl = featureAansl.get("NUMMER_BEHUIZING");
+                            vectorSourceKabels.forEachFeature(function(featureKabel) {
+                                if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                    FeatureArray.push(featureKabel);                            
+                                }
+                            });
+                            vectorSourceMSR.forEachFeature(function(featureMSR) {
+                                if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(featureMSR.getGeometry().getExtent());
+                                    FeatureArray.push(featureMSR);                            
+                                }
+                            });
+                        } 
+                    });
+                } else if (selectedFeature.get("SlimmeMeter")){
+                var HLD_tevinden = selectedFeature.get("HOOFDLEIDING");
+                var MSR_nr_aansl = selectedFeature.get("NUMMER_BEHUIZING");
+                vectorSourceKabels.forEachFeature(function(featureKabel) {
+                    if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+                        ExtentArray.push(featureKabel.getGeometry().getExtent());
+                        FeatureArray.push(featureKabel);                            
+                    }
                 });
+                vectorSourceMSR.forEachFeature(function(featureMSR) {
+                    if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
+                        ExtentArray.push(featureMSR.getGeometry().getExtent());
+                        FeatureArray.push(featureMSR);                            
+                    }
+                });
+                
+            } else {
+              window.alert("Selecteer een KLAK melding of een aansluiting");   
+            }
             }
             if (ExtentArray.length != 0) {
-            selectedSourceKabels.addFeatures(FeatureArray);
-            var pan = ol.animation.pan({
-                duration: 1000,
-                source: /** @type {ol.Coordinate} */ (view.getCenter())
-            });
-            map.beforeRender(pan);
-            var NewExtent = maxExtent(ExtentArray);
-            map.getView().fitExtent(NewExtent, map.getSize());
+                selectedSourceKabels.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                map.getView().fitExtent(NewExtent, map.getSize());
+                
+                var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>Voedende Kabel en MSR</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Voedende Kabel Hoofdleiding NR </td><td>' +  HLD_tevinden + '</td></tr>';
+                content += '<tr><td>' + 'Voedende MSR Nummer </td><td>' +  MSR_nr_aansl + '</td></tr>';
+                content += '</table>'
+                KlakMeldingInfo.innerHTML = content;                
+                sidebar.open("storingsgegevens")
+                
             }
         } else {
          window.alert("U heeft niets geselecteerd");
