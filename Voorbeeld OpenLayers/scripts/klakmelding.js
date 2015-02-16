@@ -50,6 +50,21 @@ function maxExtent(inputArray) {
 }
 
 
+function eliminateDuplicates(arr) {
+  var i,
+      len=arr.length,
+      out=[],
+      obj={};
+ 
+  for (i=0;i<len;i++) {
+    obj[arr[i]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  return out;
+}
+
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
@@ -167,11 +182,24 @@ var MSOStylesFunction = function(feature, resolution) {
 };
 
 //SelectieStyle
+
 var bluePhone = new ol.style.Style({
-    image: new ol.style.Icon(({
-                            src: 'Klakmelding/telefoon_2.png'
-                        }))
-});
+    image: new ol.style.RegularShape(
+        /** @type {olx.style.RegularShapeOptions} */({
+          fill: new ol.style.Fill({color: 'orange'}),
+          stroke: new ol.style.Stroke({color: 'black', width: 1}),
+          points: 5,
+          radius: 10,
+          radius2: 4,
+          angle: 0
+        }))
+  });
+
+//var bluePhone = new ol.style.Style({
+//    image: new ol.style.Icon(({
+//                            src: 'Klakmelding/telefoon_2.png'
+//                        }))
+//});
 
 //Styles voor de verschillende lagen
 var styleFunction = function(feature, resolution) {
@@ -260,14 +288,24 @@ var styleSelected = {
     })],
     'LineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'rgba(0,20,147,0.8)',
+      color: 'rgba(250,165,0,1)',
       width: 6
     })
   })],
       'MultiLineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'rgba(0,20,147,0.8)',
+      color: 'rgba(250,165,0,1)',
       width: 6
+    })
+  })],
+  'Polygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'blue',
+      lineDash: [4],
+      width: 3
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(250,165,0,1)'
     })
   })]
 };
@@ -297,86 +335,6 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/KLAK.GeoJSON'
 });
-
-//script om live KLAK data op te halen
-
-var vectorSourceliveKLAK = new ol.source.Vector({
-    projection: 'EPSG:3857'
-});   
- 
-var KLAKdata;
-var Ycor;
-var Xcor;
-var liveKLAK;
-var i;
-
-$.ajax({
-    type: "GET",
-    url: 'http://sa0107/cachedworkordersservice/api/workorder',
-    dataType: "json",
-    success: function(data){
-    
-        // als de JSON data ophaal actie is gedaan wordt er een loop ingezet   
-        KLAKdata = data;
-        
-        for (i=0; i< KLAKdata.WorkOrders.length; i++){
-        if (KLAKdata.WorkOrders[i].Type == "Elektrisch" && KLAKdata.WorkOrders[i].Urgency == "US") { 
-            
-        Xcor = KLAKdata.WorkOrders[i].X;
-        Ycor = KLAKdata.WorkOrders[i].Y;    
-    
-        liveKLAK = new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.transform([Number(Xcor), Number(Ycor)], 'EPSG:28992', 'EPSG:3857')),
-            Street: KLAKdata.WorkOrders[i].Street,
-            StreetNumber: KLAKdata.WorkOrders[i].StreetNumber,  
-            StreetNumberAppendix: KLAKdata.WorkOrders[i].StreetNumberAppendix,
-            Municipality: KLAKdata.WorkOrders[i].Municipality,
-            City: KLAKdata.WorkOrders[i].City,
-            Id: KLAKdata.WorkOrders[i].Id,
-            WoNumber: KLAKdata.WorkOrders[i].WoNumber,
-            Type: KLAKdata.WorkOrders[i].Type,
-            TimeArrived: KLAKdata.WorkOrders[i].TimeArrived,
-            Description: KLAKdata.WorkOrders[i].Description,
-            Status: KLAKdata.WorkOrders[i].Status,
-            AreaCode: KLAKdata.WorkOrders[i].AreaCode,
-            MechanicCode: KLAKdata.WorkOrders[i].MechanicCode,
-            Complaint: KLAKdata.WorkOrders[i].Complaint,
-            SubComplaint: KLAKdata.WorkOrders[i].SubComplaint,
-            Urgency: KLAKdata.WorkOrders[i].Urgency,
-            ProblemType: KLAKdata.WorkOrders[i].ProblemType,
-            Appointment: KLAKdata.WorkOrders[i].Appointment,
-            AppointmentStartDate: KLAKdata.WorkOrders[i].AppointmentStartDate,
-            AppointmentEndDate: KLAKdata.WorkOrders[i].AppointmentEndDate,
-            Duties: KLAKdata.WorkOrders[i].Duties,
-           // ComplaintDirection: KLAKdata.WorkOrders[i].ComplaintDirection,
-            ComplaintCode: KLAKdata.WorkOrders[i].ComplaintCode,
-            });
-
-            vectorSourceliveKLAK.addFeatures([liveKLAK]);
-        }; }
-
-}
-});
-                  
-                  
-  /*  $("#zoekadres").on('click', function()
-       var AdresVeld = $("#adreszoeker") 
-       $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
-            var FoundExtent = data[0].boundingbox;
-            var placemark_lat = data[0].lat;
-            var placemark_lon = data[0].lon;
-            
-            //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
-            var FoundMarker = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857')),
-  name: AdresVeld.value
-            });
-           selectedSourceAansl.addFeatures([FoundMarker]);
-           
-           map.getView().setCenter(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857'));
-        
-       });
-    });*/
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
@@ -431,15 +389,6 @@ var KLAKLayer = new ol.layer.Vector({
     style: styleFunctionKLAK,
     name: 'KLAKLayer'
 });
-
-/*//Klakmeldingen projecteren
-var KLAKliveLayer = new ol.layer.Vector({
-    source: vectorSourceKLAKlive,
-    projection: 'EPSG:4326',
-    style: styleFunctionKLAK,
-    name: 'KLAKliveLayer'
-});*/
-
 //LS Kabels projecteren
 var KabelLayer = new ol.layer.Vector({
     source: vectorSourceKabels,
@@ -495,13 +444,6 @@ var PC4Layer = new ol.layer.Vector({
     minResolution: 6
 });
 
-//liveKLAK 
-var liveKLAKLayer = new ol.layer.Vector({
-    source: vectorSourceliveKLAK,
-    style: styleFunctionKLAK,
-    name: "liveKLAKLayer"
-});
-
 //Geselecteerde aansluitingen
 var selectedLayerKabels = new ol.layer.Vector({
     source: selectedSourceKabels,
@@ -521,7 +463,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, liveKLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -585,11 +527,7 @@ var displayFeatureInfo_MouseOver = function(pixel) {
         info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  }else if (featureInfo[1].get("name") == "liveKLAKLayer") {
-        info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-  }  } else {
+  }} else {
     info.tooltip('hide');
   }
 };
@@ -600,7 +538,7 @@ var select = null;
 var selectMouseClick = new ol.interaction.Select({
     condition: ol.events.condition.click,
     style: styleFunctionClick,
-    layers: [KLAKLayer, MSRLayer, liveKLAKLayer]
+    layers: [KLAKLayer, MSRLayer, AanslLayer]
 });
 map.addInteraction(selectMouseClick);
 
@@ -842,31 +780,69 @@ $(document).ready(function() {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
                 var selectedFeature = features.item(k);
-                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-    //            window.alert(ARI);
-                //Find corresponding name in other layer
-                vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                        vectorSourceKabels.forEachFeature(function(featureKabel) {
-                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
-    //                            KabelID.set("type", "LineStringSelected");
-                                ExtentArray.push(featureKabel.getGeometry().getExtent());
-                                FeatureArray.push(featureKabel);                            
-                            }
-                        });
-                    } 
+                if (selectedFeature.get("Door")){
+                    var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+        //            window.alert(ARI);
+                    //Find corresponding name in other layer
+                    vectorSourceAansl.forEachFeature(function(featureAansl){
+                        if (featureAansl.get("ARI_ADRES") == ARI) {
+                            var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                            var MSR_nr_aansl = featureAansl.get("NUMMER_BEHUIZING");
+                            vectorSourceKabels.forEachFeature(function(featureKabel) {
+                                if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                    FeatureArray.push(featureKabel);                            
+                                }
+                            });
+                            vectorSourceMSR.forEachFeature(function(featureMSR) {
+                                if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(featureMSR.getGeometry().getExtent());
+                                    FeatureArray.push(featureMSR);                            
+                                }
+                            });
+                        } 
+                    });
+                } else if (selectedFeature.get("SlimmeMeter")){
+                var HLD_tevinden = selectedFeature.get("HOOFDLEIDING");
+                var MSR_nr_aansl = selectedFeature.get("NUMMER_BEHUIZING");
+                vectorSourceKabels.forEachFeature(function(featureKabel) {
+                    if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+                        ExtentArray.push(featureKabel.getGeometry().getExtent());
+                        FeatureArray.push(featureKabel);                            
+                    }
                 });
+                vectorSourceMSR.forEachFeature(function(featureMSR) {
+                    if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
+                        ExtentArray.push(featureMSR.getGeometry().getExtent());
+                        FeatureArray.push(featureMSR);                            
+                    }
+                });
+                
+            } else {
+              window.alert("Selecteer een KLAK melding of een aansluiting");   
+            }
             }
             if (ExtentArray.length != 0) {
-            selectedSourceKabels.addFeatures(FeatureArray);
-            var pan = ol.animation.pan({
-                duration: 1000,
-                source: /** @type {ol.Coordinate} */ (view.getCenter())
-            });
-            map.beforeRender(pan);
-            var NewExtent = maxExtent(ExtentArray);
-            map.getView().fitExtent(NewExtent, map.getSize());
+                selectedSourceKabels.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                map.getView().fitExtent(NewExtent, map.getSize());
+                
+                var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>Voedende Kabel en MSR</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Voedende Kabel Hoofdleiding NR </td><td>' +  HLD_tevinden + '</td></tr>';
+                content += '<tr><td>' + 'Voedende MSR Nummer </td><td>' +  MSR_nr_aansl + '</td></tr>';
+                content += '</table>'
+                KlakMeldingInfo.innerHTML = content;                
+                sidebar.open("storingsgegevens")
+                
             }
         } else {
          window.alert("U heeft niets geselecteerd");
@@ -1126,8 +1102,6 @@ $(document).ready(function() {
                 }
         });
     
-    //adres zoek unit
-    
     $("#zoekadres").on('click', function() {
        var AdresVeld = $("#adreszoeker") 
        $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
@@ -1165,6 +1139,23 @@ $(document).ready(function() {
                             FeatureArray.push(featureAansl);
                     }
                });
+            }
+            var KabelArray = [];
+            for (var k=0; k<FeatureArray.length; k++){
+                KabelArray.push(FeatureArray[k].get("HOOFDLEIDING"));
+            }
+            //Nu unieke waardes uit de KabelArray halen
+            KabelArrayUniek = eliminateDuplicates(KabelArray);
+            for (var k=0; k<KabelArrayUniek.length; k++){
+                var HoofdleidingNr = KabelArrayUniek[k];
+                vectorSourceKabels.forEachFeature(function(featureKabel) {
+                    if (featureKabel.get("HOOFDLEIDING") == HoofdleidingNr){
+    //                            KabelID.set("type", "LineStringSelected");
+                        ExtentArray.push(featureKabel.getGeometry().getExtent());
+                        FeatureArray.push(featureKabel);                            
+                    }
+                });
+            }
         if (ExtentArray.length != 0) {
                 selectedSourceAansl.addFeatures(FeatureArray);
                 var pan = ol.animation.pan({
@@ -1182,7 +1173,7 @@ $(document).ready(function() {
                         }
                     }
                 map.getView().fitExtent(NewExtent, map.getSize());
-        }}} else {  window.alert("You have not selected anything");
+        }} else {  window.alert("You have not selected anything");
     }
     
     sidebar.open("storingsgegevens")
