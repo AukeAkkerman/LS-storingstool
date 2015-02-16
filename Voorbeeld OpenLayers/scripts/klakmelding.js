@@ -336,7 +336,7 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
     url: 'data/KLAK.GeoJSON'
 });
 
-/script om live KLAK data op te halen
+//script om live KLAK data op te halen
 
 var vectorSourceliveKLAK = new ol.source.Vector({
     projection: 'EPSG:3857'
