@@ -391,7 +391,6 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
     url: 'data/KLAK.GeoJSON'
 });
 
-<<<<<<< HEAD
 //Klakmeldingen history 2014 inladen
 var vectorSourceKLAKHistory = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
@@ -403,7 +402,7 @@ var vectorSourceKLAKHistory = new ol.source.GeoJSON({
 var vectorSourceKLAKHistoryDummy = new ol.source.Vector({
     projection: 'EPSG:3857'
 }); 
-=======
+
 //script om live KLAK data op te halen
 
 var vectorSourceliveKLAK = new ol.source.Vector({
@@ -463,7 +462,6 @@ $.ajax({
 
 }
 });
->>>>>>> origin/master
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
@@ -611,11 +609,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-<<<<<<< HEAD
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
-=======
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, liveKLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
->>>>>>> origin/master
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, liveKLAKLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -741,7 +735,6 @@ $(document).ready(function() {
     });
     
     //initialise history slider
-<<<<<<< HEAD
     $("#historyslider").slider({tooltip: 'hide'});
     $("#historyslider").on("change", function(slideEvt) {           
                 historyslidervalue = slideEvt.value.newValue;
@@ -805,9 +798,6 @@ $(document).ready(function() {
         
     });
     
-=======
-  //  $("#historyslider").slider({});
->>>>>>> origin/master
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
@@ -1410,7 +1400,6 @@ $(document).ready(function() {
                  KlakMeldingInfo.innerHTML = content; 
         
     });
-<<<<<<< HEAD
 
 
     $('#toggle-toon-storingshistorie').on('click', function(){
@@ -1424,7 +1413,7 @@ $(document).ready(function() {
         }
                      
     });
-=======
+
 }); 
 
 //download PNG module werkt nog niet
@@ -1447,6 +1436,5 @@ $(document).ready(function() {
 //  info.style.display = '';*/
 //}
 
->>>>>>> origin/master
 
 
