@@ -56,6 +56,21 @@ function addDays(theDate, days) {
 
 
 
+function eliminateDuplicates(arr) {
+  var i,
+      len=arr.length,
+      out=[],
+      obj={};
+ 
+  for (i=0;i<len;i++) {
+    obj[arr[i]]=0;
+  }
+  for (i in obj) {
+    out.push(i);
+  }
+  return out;
+}
+
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
@@ -103,8 +118,8 @@ var styles = {
   })],
   'MultiLineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'green',
-      width: 1
+      color: 'rgba(200,50,50,0.8)',
+      width: 2
     })
   })],
   'MultiPoint': [new ol.style.Style({
@@ -155,12 +170,44 @@ var styles = {
     })
   })]
 };
+
+
+//MSO lokatie style
+var MSOstyles = {
+  'Point': [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({
+                color: 'rgba(0,0,0,0.6)'
+            }),
+            stroke: new ol.style.Stroke({color: 'green', width: 1})
+            })
+    })]
+};
+var MSOStylesFunction = function(feature, resolution) {
+    return MSOstyles[feature.getGeometry().getType()]; 
+};
+
 //SelectieStyle
+
 var bluePhone = new ol.style.Style({
-    image: new ol.style.Icon(({
-                            src: 'Klakmelding/telefoon_2.png'
-                        }))
-});
+    image: new ol.style.RegularShape(
+        /** @type {olx.style.RegularShapeOptions} */({
+          fill: new ol.style.Fill({color: 'orange'}),
+          stroke: new ol.style.Stroke({color: 'black', width: 1}),
+          points: 5,
+          radius: 10,
+          radius2: 4,
+          angle: 0
+        }))
+  });
+
+//var bluePhone = new ol.style.Style({
+//    image: new ol.style.Icon(({
+//                            src: 'Klakmelding/telefoon_2.png'
+//                        }))
+//});
+
 //Styles voor de verschillende lagen
 var styleFunction = function(feature, resolution) {
 //      return styles[feature.getGeometry().getType()];
@@ -172,6 +219,21 @@ if (feature.get("type")) {
     }
 };
 
+
+var stylesClick = {
+    'Point': [bluePhone],
+    'Polygon': [new ol.style.Style({
+        stroke: new ol.style.Stroke({
+          color: 'red',
+          lineDash: [4],
+          width: 3
+        })
+    })]
+};
+
+styleFunctionClick = function(feature, resolution) {
+    return stylesClick[feature.getGeometry().getType()]; 
+};
 
 var styleFunctionPC4 = function(feature, resolution) {
     
@@ -188,10 +250,10 @@ var styleFunctionPC4 = function(feature, resolution) {
         stroke: new ol.style.Stroke({
           color: 'blue',
           lineDash: [4],
-          width: 3
+          width: 1
         }),
         fill: new ol.style.Fill({
-          color: 'rgba(0, 0, 255, 0.1)'
+          color: 'rgba(0, 0, 255, 0.05)'
         }),
         text: new ol.style.Text({
             text: TextInhoud, 
@@ -214,6 +276,7 @@ var stylesKLAK = {
         }))
     })]
 };
+
 
 var styleFunctionKLAK = function(feature, resolution) {
     return stylesKLAK[feature.getGeometry().getType()]; 
@@ -280,8 +343,24 @@ var styleSelected = {
     })],
     'LineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'rgba(0,20,147,0.8)',
+      color: 'rgba(250,165,0,1)',
       width: 6
+    })
+  })],
+      'MultiLineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(250,165,0,1)',
+      width: 6
+    })
+  })],
+  'Polygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'blue',
+      lineDash: [4],
+      width: 3
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(250,165,0,1)'
     })
   })]
 };
@@ -312,6 +391,7 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
     url: 'data/KLAK.GeoJSON'
 });
 
+<<<<<<< HEAD
 //Klakmeldingen history 2014 inladen
 var vectorSourceKLAKHistory = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
@@ -323,17 +403,78 @@ var vectorSourceKLAKHistory = new ol.source.GeoJSON({
 var vectorSourceKLAKHistoryDummy = new ol.source.Vector({
     projection: 'EPSG:3857'
 }); 
+=======
+//script om live KLAK data op te halen
+
+var vectorSourceliveKLAK = new ol.source.Vector({
+    projection: 'EPSG:3857'
+});   
+ 
+var KLAKdata;
+var Ycor;
+var Xcor;
+var liveKLAK;
+var i;
+
+$.ajax({
+    type: "GET",
+    url: 'http://sa0107/cachedworkordersservice/api/workorder',
+    dataType: "json",
+    success: function(data){
+    
+        // als de JSON data ophaal actie is gedaan wordt er een loop ingezet   
+        KLAKdata = data;
+        
+        for (i=0; i< KLAKdata.WorkOrders.length; i++){
+        if (KLAKdata.WorkOrders[i].Type == "Elektrisch" && KLAKdata.WorkOrders[i].Urgency == "US") { 
+            
+        Xcor = KLAKdata.WorkOrders[i].X;
+        Ycor = KLAKdata.WorkOrders[i].Y;    
+    
+        liveKLAK = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([Number(Xcor), Number(Ycor)], 'EPSG:28992', 'EPSG:3857')),
+            Street: KLAKdata.WorkOrders[i].Street,
+            StreetNumber: KLAKdata.WorkOrders[i].StreetNumber,  
+            StreetNumberAppendix: KLAKdata.WorkOrders[i].StreetNumberAppendix,
+            Municipality: KLAKdata.WorkOrders[i].Municipality,
+            City: KLAKdata.WorkOrders[i].City,
+            Id: KLAKdata.WorkOrders[i].Id,
+            WoNumber: KLAKdata.WorkOrders[i].WoNumber,
+            Type: KLAKdata.WorkOrders[i].Type,
+            TimeArrived: KLAKdata.WorkOrders[i].TimeArrived,
+            Description: KLAKdata.WorkOrders[i].Description,
+            Status: KLAKdata.WorkOrders[i].Status,
+            AreaCode: KLAKdata.WorkOrders[i].AreaCode,
+            MechanicCode: KLAKdata.WorkOrders[i].MechanicCode,
+            Complaint: KLAKdata.WorkOrders[i].Complaint,
+            SubComplaint: KLAKdata.WorkOrders[i].SubComplaint,
+            Urgency: KLAKdata.WorkOrders[i].Urgency,
+            ProblemType: KLAKdata.WorkOrders[i].ProblemType,
+            Appointment: KLAKdata.WorkOrders[i].Appointment,
+            AppointmentStartDate: KLAKdata.WorkOrders[i].AppointmentStartDate,
+            AppointmentEndDate: KLAKdata.WorkOrders[i].AppointmentEndDate,
+            Duties: KLAKdata.WorkOrders[i].Duties,
+           // ComplaintDirection: KLAKdata.WorkOrders[i].ComplaintDirection,
+            ComplaintCode: KLAKdata.WorkOrders[i].ComplaintCode,
+            });
+
+            vectorSourceliveKLAK.addFeatures([liveKLAK]);
+        }; }
+
+}
+});
+>>>>>>> origin/master
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/NRG_LS_Kabels.GeoJSON'
+    url: 'data/MV_NRG_LS_KABELS.GeoJSON'
 });
 
 //Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/Aansluitingen_inclslim(3).GeoJSON'
+    url: 'data/MV_NRG_LS_AANSLUITING.GeoJSON'
 });
 
 var selectedSourceAansl = new ol.source.Vector({
@@ -347,13 +488,19 @@ var selectedSourceKabels = new ol.source.Vector({
 //MS kabels inladen
 var vectorSourceKabelsMS = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/NRG_MS_kabel_sel.GeoJSON'
+    url: 'data/MV_NRG_MS_KABELS.GeoJSON'
 });
 
 //MSRen inladen
 var vectorSourceMSR = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/NRG_stationsbehuizing_sel.GeoJSON'
+    url: 'data/MV_NRG_STATIONBEHUIZING.GeoJSON'
+});
+
+//MSR MSO lokatie inladen
+var vectorSourceMSOLoc = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/MV_NRG_STATION_MSO_LOKATIE.GeoJSON'
 });
 
 //PC4 inladen
@@ -389,7 +536,7 @@ var KabelLayer = new ol.layer.Vector({
     projection: 'EPSG:4326',
     style: styleFunction,
     name: 'KabelLayer',
-    maxResolution: 3
+    maxResolution: 1
 });
 
 //Aansluitingen projecteren
@@ -419,13 +566,30 @@ var MSRLayer = new ol.layer.Vector({
     maxResolution: 5
 });
 
+//MSR MSO Lokatie projecteren
+var MSOLocLayer = new ol.layer.Vector({
+    source: vectorSourceMSOLoc,
+    projection: 'EPSG:4326',
+    style: MSOStylesFunction,
+    name: 'MSOLocLayer',
+    maxResolution: 5
+});
+
+
 //PC4en projecteren
 var PC4Layer = new ol.layer.Vector({
     source: vectorSourcePC4,
     projection: 'EPSG:4326',
     style: styleFunctionPC4,
     name: 'PC4_gebieden',
-    minResolution: 4
+    minResolution: 6
+});
+
+//liveKLAK 
+var liveKLAKLayer = new ol.layer.Vector({
+    source: vectorSourceliveKLAK,
+    style: styleFunctionKLAK,
+    name: "liveKLAKLayer"
 });
 
 //Geselecteerde aansluitingen
@@ -447,7 +611,11 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
+<<<<<<< HEAD
     layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
+=======
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, liveKLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
+>>>>>>> origin/master
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -513,6 +681,8 @@ var displayFeatureInfo_MouseOver = function(pixel) {
         info.tooltip('show');
   } else if (featureInfo[1].get("name") == "KabelLayerMS") {
         info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
+  } else if (featureInfo[1].get("name") == "liveKLAKLayer") {
+        info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
         info.tooltip('fixTitle')
         info.tooltip('show');
   }} else {
@@ -525,12 +695,12 @@ var displayFeatureInfo_MouseOver = function(pixel) {
 var select = null;
 var selectMouseClick = new ol.interaction.Select({
     condition: ol.events.condition.click,
-    style: bluePhone,
-    layers: [KLAKLayer, MSRLayer]
+    style: styleFunctionClick,
+    layers: [KLAKLayer, MSRLayer, AanslLayer, liveKLAKLayer]
 });
 map.addInteraction(selectMouseClick);
 
-$(map.getViewport()).on('click', function(evt) {
+ $("#deselect-storing").on('click', function() {
     selectedSourceAansl.clear();
     selectedSourceKabels.clear();
 //    $('#KlakInfo').empty();
@@ -543,6 +713,7 @@ $(map.getViewport()).on('click', function(evt) {
     for(var i=0; i < map.getOverlays().getLength() ; i++){
     map.removeOverlay(map.getOverlays().item(i));
     }
+    sidebar.close()
 });
 
 function createCircleOutOverlay(position, WelNiet) {
@@ -570,6 +741,7 @@ $(document).ready(function() {
     });
     
     //initialise history slider
+<<<<<<< HEAD
     $("#historyslider").slider({tooltip: 'hide'});
     $("#historyslider").on("change", function(slideEvt) {           
                 historyslidervalue = slideEvt.value.newValue;
@@ -633,6 +805,9 @@ $(document).ready(function() {
         
     });
     
+=======
+  //  $("#historyslider").slider({});
+>>>>>>> origin/master
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
@@ -828,31 +1003,69 @@ $(document).ready(function() {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
                 var selectedFeature = features.item(k);
-                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-    //            window.alert(ARI);
-                //Find corresponding name in other layer
-                vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                        vectorSourceKabels.forEachFeature(function(featureKabel) {
-                            if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
-    //                            KabelID.set("type", "LineStringSelected");
-                                ExtentArray.push(featureKabel.getGeometry().getExtent());
-                                FeatureArray.push(featureKabel);                            
-                            }
-                        });
-                    } 
+                if (selectedFeature.get("Door")){
+                    var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
+        //            window.alert(ARI);
+                    //Find corresponding name in other layer
+                    vectorSourceAansl.forEachFeature(function(featureAansl){
+                        if (featureAansl.get("ARI_ADRES") == ARI) {
+                            var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
+                            var MSR_nr_aansl = featureAansl.get("NUMMER_BEHUIZING");
+                            vectorSourceKabels.forEachFeature(function(featureKabel) {
+                                if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(featureKabel.getGeometry().getExtent());
+                                    FeatureArray.push(featureKabel);                            
+                                }
+                            });
+                            vectorSourceMSR.forEachFeature(function(featureMSR) {
+                                if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
+        //                            KabelID.set("type", "LineStringSelected");
+                                    ExtentArray.push(featureMSR.getGeometry().getExtent());
+                                    FeatureArray.push(featureMSR);                            
+                                }
+                            });
+                        } 
+                    });
+                } else if (selectedFeature.get("SlimmeMeter")){
+                var HLD_tevinden = selectedFeature.get("HOOFDLEIDING");
+                var MSR_nr_aansl = selectedFeature.get("NUMMER_BEHUIZING");
+                vectorSourceKabels.forEachFeature(function(featureKabel) {
+                    if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
+                        ExtentArray.push(featureKabel.getGeometry().getExtent());
+                        FeatureArray.push(featureKabel);                            
+                    }
                 });
+                vectorSourceMSR.forEachFeature(function(featureMSR) {
+                    if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
+                        ExtentArray.push(featureMSR.getGeometry().getExtent());
+                        FeatureArray.push(featureMSR);                            
+                    }
+                });
+                
+            } else {
+              window.alert("Selecteer een KLAK melding of een aansluiting");   
+            }
             }
             if (ExtentArray.length != 0) {
-            selectedSourceKabels.addFeatures(FeatureArray);
-            var pan = ol.animation.pan({
-                duration: 1000,
-                source: /** @type {ol.Coordinate} */ (view.getCenter())
-            });
-            map.beforeRender(pan);
-            var NewExtent = maxExtent(ExtentArray);
-            map.getView().fitExtent(NewExtent, map.getSize());
+                selectedSourceKabels.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                map.getView().fitExtent(NewExtent, map.getSize());
+                
+                var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>Voedende Kabel en MSR</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Voedende Kabel Hoofdleiding NR </td><td>' +  HLD_tevinden + '</td></tr>';
+                content += '<tr><td>' + 'Voedende MSR Nummer </td><td>' +  MSR_nr_aansl + '</td></tr>';
+                content += '</table>'
+                KlakMeldingInfo.innerHTML = content;                
+                sidebar.open("storingsgegevens")
+                
             }
         } else {
          window.alert("U heeft niets geselecteerd");
@@ -977,14 +1190,7 @@ $(document).ready(function() {
                 
                 
                     
-                    
-
                 
-                    
-                    
-                    
-                    
-                    
                      //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                     var InfoGestAans = document.getElementById('example');
                     var content = "<table>"
@@ -1137,6 +1343,88 @@ $(document).ready(function() {
         
        });
     });
+    
+    //MSR selecteren en onderliggende aansluitingen weergeven
+    $('#MSR-onderliggen-aansl').on('click', function(){
+        if(selectMouseClick) {
+            var ExtentArray = [];
+            var FeatureArray = [];
+            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
+                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
+                var features = selectMouseClick.getFeatures();
+                var selectedFeature = features.item(k);
+                var Behuizingsnummer = selectedFeature.get("NUMMER_BEHUIZING");
+
+                //Find corresponding name in other layer
+               vectorSourceAansl.forEachFeature(function(featureAansl){
+                    if (featureAansl.get("NUMMER_BEHUIZING") == Behuizingsnummer) {
+                            ExtentArray.push(featureAansl.getGeometry().getExtent());
+                            FeatureArray.push(featureAansl);
+                    }
+               });
+            }
+            var KabelArray = [];
+            for (var k=0; k<FeatureArray.length; k++){
+                KabelArray.push(FeatureArray[k].get("HOOFDLEIDING"));
+            }
+            //Nu unieke waardes uit de KabelArray halen
+            KabelArrayUniek = eliminateDuplicates(KabelArray);
+            for (var k=0; k<KabelArrayUniek.length; k++){
+                var HoofdleidingNr = KabelArrayUniek[k];
+                vectorSourceKabels.forEachFeature(function(featureKabel) {
+                    if (featureKabel.get("HOOFDLEIDING") == HoofdleidingNr){
+    //                            KabelID.set("type", "LineStringSelected");
+                        ExtentArray.push(featureKabel.getGeometry().getExtent());
+                        FeatureArray.push(featureKabel);                            
+                    }
+                });
+            }
+        if (ExtentArray.length != 0) {
+                selectedSourceAansl.addFeatures(FeatureArray);
+                var pan = ol.animation.pan({
+                    duration: 1000,
+                    source: /** @type {ol.Coordinate} */ (view.getCenter())
+                });
+                map.beforeRender(pan);
+                var NewExtent = maxExtent(ExtentArray);
+                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
+                    for(var k=0; k<NewExtent.length; k++) {
+                        if(k == 0 || k == 1){
+                            NewExtent[k] *= (1/1.000002);
+                        } else {
+                            NewExtent[k] *= 1.000002;
+                        }
+                    }
+                map.getView().fitExtent(NewExtent, map.getSize());
+        }} else {  window.alert("You have not selected anything");
+    }
+    
+    sidebar.open("storingsgegevens")
+        
+    var KlakMeldingInfo = document.getElementById('KlakInfo');
+                var content = "<b>MSR analyse</b>"
+                content += "<table>"
+                content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  FeatureArray.length + '</td></tr>';
+                content += '<tr><td>' + 'Ruimte nummer </td><td> ' +  Behuizingsnummer + '</td></tr>';
+                content += "</table>"  
+                 KlakMeldingInfo.innerHTML = content; 
+        
+    });
+<<<<<<< HEAD
+
+
+    $('#toggle-toon-storingshistorie').on('click', function(){
+        
+        KLAKLayerHistory.setVisible(!KLAKLayerHistory.getVisible());
+        
+        if (KLAKLayerHistory.getVisible())
+        {
+            //vervolgens de tabbar openen waar de gegevens instaan
+            sidebar.open("settings");
+        }
+                     
+    });
+=======
 }); 
 
 //download PNG module werkt nog niet
@@ -1159,70 +1447,6 @@ $(document).ready(function() {
 //  info.style.display = '';*/
 //}
 
-
-//MSR selecteren en onderliggende aansluitingen weergeven
-    $('#MSR-onderliggen-aansl').on('click', function(){
-        
-        if(selectMouseClick) {
-            var ExtentArray = [];
-            var FeatureArray = [];
-            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
-                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-                var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(k);
-                var Behuizingsnummer = selectedFeature.get("NUMMER_BEHUIZING");
-
-                //Find corresponding name in other layer
-               vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("NUMMER_BEHUIZING") == Behuizingsnummer) {
-                        var Behuizingsnummer_tevinden = featureAansl.get("NUMMER_BEHUIZING");
-                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
-                            vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                if (featureAansl2.get("NUMMER_BEHUIZING") == Behuizingsnummer_tevinden){
-                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
-                                    FeatureArray.push(featureAansl2);
-                                                                    
-                                }
-                            });
-                        }
-                    }); 
-                
-                }
-        if (ExtentArray.length != 0) {
-                selectedSourceAansl.addFeatures(FeatureArray);
-                var pan = ol.animation.pan({
-                    duration: 1000,
-                    source: /** @type {ol.Coordinate} */ (view.getCenter())
-                });
-                map.beforeRender(pan);
-                var NewExtent = maxExtent(ExtentArray);
-                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
-                    for(var k=0; k<NewExtent.length; k++) {
-                        if(k == 0 || k == 1){
-                            NewExtent[k] *= (1/1.000002);
-                        } else {
-                            NewExtent[k] *= 1.000002;
-                        }
-                    }
-                map.getView().fitExtent(NewExtent, map.getSize());
-        
-        
-        
-        }} else {  window.alert("You have not selected anything");
-        }
-    });
-
-
-    $('#toggle-toon-storingshistorie').on('click', function(){
-        
-        KLAKLayerHistory.setVisible(!KLAKLayerHistory.getVisible());
-        
-        if (KLAKLayerHistory.getVisible())
-        {
-            //vervolgens de tabbar openen waar de gegevens instaan
-            sidebar.open("settings");
-        }
-                     
-    });
+>>>>>>> origin/master
 
 
