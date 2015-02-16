@@ -1,7 +1,12 @@
-.container-full-page{
+/*
+.container-fluid{
     max-width: 100%;
-    max-height: 100%;
+    max-height:  calc(98% - 444px);
+    margin: -15 -15 0 0;
+    width: 100%;
+    height: calc(90% - 444px);
 }
+*/
 
 .container-map-sidebar{
     max-width : 100%;
@@ -21,6 +26,19 @@ html{
 body{
     max-height: 100%;   
 }
+
+
+.container-fluid {
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    max-height:  100%;
+    float:left;
+    position: fixed
+}
+
+
+
 
 #map {
         position: relative;
@@ -392,3 +410,4 @@ label {
     text-indent: -15px;
     font-weight: 700;
 }
+

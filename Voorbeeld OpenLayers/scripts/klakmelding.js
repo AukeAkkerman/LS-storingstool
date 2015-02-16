@@ -49,11 +49,18 @@ function maxExtent(inputArray) {
     return resultArray;
 }
 
+function addDays(theDate, days) {
+    return new Date(theDate.getTime() + days*24*60*60*1000);
+}
+
+
+
 
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
-
+//keep track of KLAK history slider values
+var historyslidervalue=[-31,0];
 
 var projection = ol.proj.get('EPSG:3857');
 
@@ -212,6 +219,54 @@ var styleFunctionKLAK = function(feature, resolution) {
     return stylesKLAK[feature.getGeometry().getType()]; 
 };
 
+//definitie stylesKLAKHistory
+var stylesKLAKHistory = {
+    'Point': [new ol.style.Style({
+        image: new ol.style.Icon(({
+            src: 'Klakmelding/telefoon_grijs.png'
+        }))
+    })]
+};
+
+var stylesKLAKHistoryInvisible = {
+    'Point': [new ol.style.Style({
+        visible: false
+    })]
+};
+
+var stylesFunctionKLAKHistory = function(feature, resolution) {
+    //return stylesKLAKHistory[feature.getGeometry().getType()]; 
+    
+    var parts  = feature.get('BEGIN_STORING');
+    var Klak_BEGIN_STORING = new Date(1995,1,1);
+    
+    if (typeof parts !== "undefined")  
+    {
+        parts = parts.split('-');
+        if (parts.length > 2)
+        {
+            var year = parseInt("20"+parts[2]);
+            var dt1  = parseInt(parts[0]);
+            var mon1 = parseInt(parts[1]);
+            Klak_BEGIN_STORING = new Date(year,mon1-1,dt1);
+        }
+
+    }
+        
+    var fromdate = addDays(new Date(2014,12,31),historyslidervalue[0]);
+    var todate = addDays(new Date(2014,12,31),historyslidervalue[1]);
+        
+    if (Klak_BEGIN_STORING >= fromdate && Klak_BEGIN_STORING <= todate)
+    {
+        return stylesKLAKHistory[feature.getGeometry().getType()]; 
+    }
+    else
+    {
+        return stylesKLAKHistoryInvisible[feature.getGeometry().getType()]; 
+    }
+
+};
+
 //Style speciaal voor de selected layer
 var styleSelected = {
     'Point': [new ol.style.Style({
@@ -256,6 +311,18 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/KLAK.GeoJSON'
 });
+
+//Klakmeldingen history 2014 inladen
+var vectorSourceKLAKHistory = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    defaultProjection: 'EPSG:4326',
+    url: 'data/LS_KLAK_2014_new.GeoJSON',
+    strategy: 'ol.Strategy.Box'
+});
+
+var vectorSourceKLAKHistoryDummy = new ol.source.Vector({
+    projection: 'EPSG:3857'
+}); 
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
@@ -304,6 +371,18 @@ var KLAKLayer = new ol.layer.Vector({
     style: styleFunctionKLAK,
     name: 'KLAKLayer'
 });
+
+
+//Klakmeldingen history projecteren
+var KLAKLayerHistory = new ol.layer.Vector({
+    source: vectorSourceKLAKHistory,
+    projection: 'EPSG:4326',
+    //strategies: [new ol.layer.Strategy.Fixed(), filterStrategy],
+    style: stylesFunctionKLAKHistory,
+    name: 'KLAKLayerHistory',
+    visible: false
+});
+
 //LS Kabels projecteren
 var KabelLayer = new ol.layer.Vector({
     source: vectorSourceKabels,
@@ -368,7 +447,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -405,6 +484,10 @@ var displayFeatureInfo_MouseOver = function(pixel) {
     info.tooltip('hide')
     if (featureInfo[1].get("name") == "KLAKLayer") {
         info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klantnaam: " + featureInfo[0].get('Klant') + "\n" + "Straatnaam: " + featureInfo[0].get('STRAAT') + " " + featureInfo[0].get('NR') + "\n" +  "Ingevoerd door: " + featureInfo[0].get("Door")])
+        info.tooltip('fixTitle')
+        info.tooltip('show');
+    } else if (featureInfo[1].get("name") == "KLAKLayerHistory") {
+        info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klak nr: " + featureInfo[0].get('KLAK') + "\n" + "Component: " + featureInfo[0].get('COMPONENT') + "\n" + "Oorzaak: " + featureInfo[0].get('OORZAAK') + "\n" + "Aantal aansl.: "+ featureInfo[0].get('AANT_AANSL') + "\n" + "Monteur: " + featureInfo[0].get("MONTEUR")])
         info.tooltip('fixTitle')
         info.tooltip('show');
     } else if (featureInfo[1].get("name") == "AanslLayer") {
@@ -477,7 +560,6 @@ function createCircleOutOverlay(position, WelNiet) {
 }
 
 
-
 $(document).ready(function() {    
     
     // grey out text of elements that are named 'disabled'
@@ -488,7 +570,69 @@ $(document).ready(function() {
     });
     
     //initialise history slider
-    $("#historyslider").slider({});
+    $("#historyslider").slider({tooltip: 'hide'});
+    $("#historyslider").on("change", function(slideEvt) {           
+                historyslidervalue = slideEvt.value.newValue;
+                
+                var slidestart;
+                if (historyslidervalue[0]==0)
+                {
+                    slidestart="vandaag";
+                }
+                else
+                {
+                    slidestart=historyslidervalue[0]+" dagen geleden";
+                }
+        
+                var slideend;
+                if (historyslidervalue[1]==0)
+                {
+                    slideend="vandaag";
+                }
+                else
+                {
+                    slideend=historyslidervalue[1]+" dagen geleden";
+                }
+        
+                var histstart=historyslidervalue[0];
+                
+                var histend=historyslidervalue[1];
+                $("#ex6SliderVal1").text(slidestart);
+                $("#ex6SliderVal2").text(slideend);
+                map.updateSize()
+                
+                /*
+                map.getLayers().forEach(function(layer) {
+                    if (layer.get('name') == 'KLAKLayerhistory') 
+                    {
+                       
+                        var f = new ol.Feature({
+                            'i': 1,
+                            'size': 20
+                        });
+                        f.setGeometry( new ol.geom.Point([0,0]) );
+                        var features = new Array();
+                        features.push(f);
+                        
+                       
+                        //layer.setOpacity(.4);
+                        //var sourceold = layer.getSource();
+                        //layer.getSource().clear();
+                        
+                        //layer.setSource(sourceold);
+                        //layer.setVisible(!layer.getVisible());
+                        
+                        map.updateSize()
+                        //layer.getVisible()
+                    }
+                  });
+                */
+                //map.renderSync();
+                //KLAKLayerHistory.render();
+
+        
+    });
+    
     
     //export to CSV functie
     function exportTableToCSV($table, filename) {
@@ -1067,3 +1211,18 @@ $(document).ready(function() {
         }} else {  window.alert("You have not selected anything");
         }
     });
+
+
+    $('#toggle-toon-storingshistorie').on('click', function(){
+        
+        KLAKLayerHistory.setVisible(!KLAKLayerHistory.getVisible());
+        
+        if (KLAKLayerHistory.getVisible())
+        {
+            //vervolgens de tabbar openen waar de gegevens instaan
+            sidebar.open("settings");
+        }
+                     
+    });
+
+
