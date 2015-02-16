@@ -298,6 +298,86 @@ var vectorSourceKLAK = new ol.source.GeoJSON({
     url: 'data/KLAK.GeoJSON'
 });
 
+//script om live KLAK data op te halen
+
+var vectorSourceliveKLAK = new ol.source.Vector({
+    projection: 'EPSG:3857'
+});   
+ 
+var KLAKdata;
+var Ycor;
+var Xcor;
+var liveKLAK;
+var i;
+
+$.ajax({
+    type: "GET",
+    url: 'http://sa0107/cachedworkordersservice/api/workorder',
+    dataType: "json",
+    success: function(data){
+    
+        // als de JSON data ophaal actie is gedaan wordt er een loop ingezet   
+        KLAKdata = data;
+        
+        for (i=0; i< KLAKdata.WorkOrders.length; i++){
+        if (KLAKdata.WorkOrders[i].Type == "Elektrisch" && KLAKdata.WorkOrders[i].Urgency == "US") { 
+            
+        Xcor = KLAKdata.WorkOrders[i].X;
+        Ycor = KLAKdata.WorkOrders[i].Y;    
+    
+        liveKLAK = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([Number(Xcor), Number(Ycor)], 'EPSG:28992', 'EPSG:3857')),
+            Street: KLAKdata.WorkOrders[i].Street,
+            StreetNumber: KLAKdata.WorkOrders[i].StreetNumber,  
+            StreetNumberAppendix: KLAKdata.WorkOrders[i].StreetNumberAppendix,
+            Municipality: KLAKdata.WorkOrders[i].Municipality,
+            City: KLAKdata.WorkOrders[i].City,
+            Id: KLAKdata.WorkOrders[i].Id,
+            WoNumber: KLAKdata.WorkOrders[i].WoNumber,
+            Type: KLAKdata.WorkOrders[i].Type,
+            TimeArrived: KLAKdata.WorkOrders[i].TimeArrived,
+            Description: KLAKdata.WorkOrders[i].Description,
+            Status: KLAKdata.WorkOrders[i].Status,
+            AreaCode: KLAKdata.WorkOrders[i].AreaCode,
+            MechanicCode: KLAKdata.WorkOrders[i].MechanicCode,
+            Complaint: KLAKdata.WorkOrders[i].Complaint,
+            SubComplaint: KLAKdata.WorkOrders[i].SubComplaint,
+            Urgency: KLAKdata.WorkOrders[i].Urgency,
+            ProblemType: KLAKdata.WorkOrders[i].ProblemType,
+            Appointment: KLAKdata.WorkOrders[i].Appointment,
+            AppointmentStartDate: KLAKdata.WorkOrders[i].AppointmentStartDate,
+            AppointmentEndDate: KLAKdata.WorkOrders[i].AppointmentEndDate,
+            Duties: KLAKdata.WorkOrders[i].Duties,
+           // ComplaintDirection: KLAKdata.WorkOrders[i].ComplaintDirection,
+            ComplaintCode: KLAKdata.WorkOrders[i].ComplaintCode,
+            });
+
+            vectorSourceliveKLAK.addFeatures([liveKLAK]);
+        }; }
+
+}
+});
+                  
+                  
+  /*  $("#zoekadres").on('click', function()
+       var AdresVeld = $("#adreszoeker") 
+       $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
+            var FoundExtent = data[0].boundingbox;
+            var placemark_lat = data[0].lat;
+            var placemark_lon = data[0].lon;
+            
+            //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
+            var FoundMarker = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857')),
+  name: AdresVeld.value
+            });
+           selectedSourceAansl.addFeatures([FoundMarker]);
+           
+           map.getView().setCenter(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857'));
+        
+       });
+    });*/
+
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
@@ -351,6 +431,15 @@ var KLAKLayer = new ol.layer.Vector({
     style: styleFunctionKLAK,
     name: 'KLAKLayer'
 });
+
+/*//Klakmeldingen projecteren
+var KLAKliveLayer = new ol.layer.Vector({
+    source: vectorSourceKLAKlive,
+    projection: 'EPSG:4326',
+    style: styleFunctionKLAK,
+    name: 'KLAKliveLayer'
+});*/
+
 //LS Kabels projecteren
 var KabelLayer = new ol.layer.Vector({
     source: vectorSourceKabels,
@@ -406,6 +495,13 @@ var PC4Layer = new ol.layer.Vector({
     minResolution: 6
 });
 
+//liveKLAK 
+var liveKLAKLayer = new ol.layer.Vector({
+    source: vectorSourceliveKLAK,
+    style: styleFunctionKLAK,
+    name: "liveKLAKLayer"
+});
+
 //Geselecteerde aansluitingen
 var selectedLayerKabels = new ol.layer.Vector({
     source: selectedSourceKabels,
@@ -425,7 +521,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayer, liveKLAKLayer, selectedLayerAansl, selectedLayerKabels, KabelLayerMS, MSRLayer, MSOLocLayer],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -489,7 +585,11 @@ var displayFeatureInfo_MouseOver = function(pixel) {
         info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  }} else {
+  }else if (featureInfo[1].get("name") == "liveKLAKLayer") {
+        info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
+        info.tooltip('fixTitle')
+        info.tooltip('show');
+  }  } else {
     info.tooltip('hide');
   }
 };
@@ -500,7 +600,7 @@ var select = null;
 var selectMouseClick = new ol.interaction.Select({
     condition: ol.events.condition.click,
     style: styleFunctionClick,
-    layers: [KLAKLayer, MSRLayer]
+    layers: [KLAKLayer, MSRLayer, liveKLAKLayer]
 });
 map.addInteraction(selectMouseClick);
 
@@ -1025,6 +1125,8 @@ $(document).ready(function() {
                  window.alert("You have not selected anything");
                 }
         });
+    
+    //adres zoek unit
     
     $("#zoekadres").on('click', function() {
        var AdresVeld = $("#adreszoeker") 
