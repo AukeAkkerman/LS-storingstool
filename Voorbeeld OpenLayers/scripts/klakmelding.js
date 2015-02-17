@@ -928,6 +928,8 @@ $(document).ready(function() {
     
     $("#toggle-msr").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
+        MSOLocLayer.setVisible(!MSOLocLayer.getVisible());
+        
     });
     
     $("#toggle-PC4-laag").on('click', function() {
