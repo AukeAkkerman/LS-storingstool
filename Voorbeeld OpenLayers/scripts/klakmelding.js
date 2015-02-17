@@ -725,14 +725,14 @@ var selectMouseClick = new ol.interaction.Select({
 map.addInteraction(selectMouseClick);
 
  $("#deselect-storing").on('click', function() {
-     selectedSourceAansl.clear();
-     selectedSourceKabels.clear();
-//    selectedSourceAansl.forEachFeature(function(featureSource){
-//        selectedSourceAansl.removeFeature(featureSource);
-//    });
-//    selectedSourceKabels.forEachFeature(function(featureKabel){
-//        selectedSourceKabels.removeFeature(featureKabel);
-//    });
+//     selectedSourceAansl.clear();
+//     selectedSourceKabels.clear();
+    selectedSourceAansl.forEachFeature(function(featureSource){
+        selectedSourceAansl.removeFeature(featureSource);
+    });
+    selectedSourceKabels.forEachFeature(function(featureKabel){
+        selectedSourceKabels.removeFeature(featureKabel);
+    });
 //    $('#KlakInfo').empty();
 //    $('#example').empty();
     //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
