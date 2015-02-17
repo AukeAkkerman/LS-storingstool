@@ -414,26 +414,37 @@ var Ycor;
 var Xcor;
 var liveKLAK;
 var i;
-var discipline = "Elektrisch";
-var urgentie = "US";
-
+var discipline1 = "Elektrisch";
+var discipline2 = "";
+var urgentie1 = "US";
+var urgentie2 = "";
+liveKLAKreload();
 
     $('#toggle-elektrisch').on('click', function () {
         KLAKLayer.setVisible(!KLAKLayer.getVisible());
+        if ($('#toggle-elektrisch').is(":checked") == true) {discipline1 = "Elektrisch"} else {discipline1 = ""}
+        liveKLAKreload();
     });
 
      $('#toggle-gas').on('click', function () { 
+        if ($('#toggle-gas').is(":checked") == true) {discipline2 = "Gas"} else {discipline2 = ""}
+        liveKLAKreload();
      });         
 
      $('#toggle-US-ZUS').on('click', function () {
+        if ($('#toggle-US-ZUS').is(":checked") == true) {urgentie1 = "US"} else {urgentie1 = ""}
+        liveKLAKreload();
      }); 
 
-     $('#toggle-NUS').on('click', function () {      
+     $('#toggle-NUS').on('click', function () {    
+        if ($('#toggle-NUS').is(":checked") == true) {urgentie2 = "NUS"} else {urgentie2 = ""}
+        liveKLAKreload();
      }); 
 
-if ($('#toggle-elektrisch').is(":checked") == true && $('#toggle-gas').is(":checked") == true) {discipline = "" } else if ($('#toggle-elektrisch').is(":checked") == true && $('#toggle-gas').is(":checked") == false) {discipline = "Elektisch"} else if ($('#toggle-elektrisch').is(":checked") == false && $('#toggle-gas').is(":checked") == true) {discipline= "Gas"} else {discipline = "niks"}
 
+function liveKLAKreload(){
 
+        vectorSourceliveKLAK.clear();
 $.ajax({
     type: "GET",
     url: 'http://sa0107/cachedworkordersservice/api/workorder',
@@ -444,8 +455,7 @@ $.ajax({
         KLAKdata = data;
         
         for (i=0; i< KLAKdata.WorkOrders.length; i++){
-        if (KLAKdata.WorkOrders[i].Type == discipline && KLAKdata.WorkOrders[i].Urgency == urgentie ) { 
-       // if ( if (Evar == 1 && Gvar == 1) { } else if (Evar == 0 && Gvar == 1) {KLAKdata.WorkOrders[i].Type == "Gas" } else if (Evar == 1 && Gvar == 0) {KLAKdata.WorkOrders[i].Type == "Elektrisch" } else {KLAKdata.WorkOrders[i].Type == "niks" } && if (ZUSvar == 1 && NUSvar == 1) { } else if (ZUSvar == 0 && NUSvar == 1) {KLAKdata.WorkOrders[i].Type == "NUS" } else if (ZUSvar == 1 && NUSvar == 0) {KLAKdata.WorkOrders[i].Type == "US" } else {KLAKdata.WorkOrders[i].Type == "niks" }) {    
+        if ((KLAKdata.WorkOrders[i].Type == discipline1 ||KLAKdata.WorkOrders[i].Type == discipline2)  && (KLAKdata.WorkOrders[i].Urgency == urgentie1 || KLAKdata.WorkOrders[i].Urgency == urgentie2) ) {   
         
         Xcor = KLAKdata.WorkOrders[i].X;
         Ycor = KLAKdata.WorkOrders[i].Y;    
@@ -479,9 +489,9 @@ $.ajax({
 
             vectorSourceliveKLAK.addFeatures([liveKLAK]);
         }; }
-
 }
 });
+};
 
 //Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
@@ -864,7 +874,7 @@ $(document).ready(function() {
     // This must be a hyperlink
     $('#export').on('click', function (event) {
         // CSV
-        exportTableToCSV.apply(this, [$('#example>table'), 'export.csv']);
+        exportTableToCSV.apply(this, [$('#example'), 'export.csv']);
         
         // IF CSV, don't do event.preventDefault() or return false
         // We actually need this to be a typical hyperlink
