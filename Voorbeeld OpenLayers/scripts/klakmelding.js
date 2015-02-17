@@ -715,8 +715,14 @@ var selectMouseClick = new ol.interaction.Select({
 map.addInteraction(selectMouseClick);
 
  $("#deselect-storing").on('click', function() {
-    selectedSourceAansl.clear();
-    selectedSourceKabels.clear();
+     selectedSourceAansl.clear();
+     selectedSourceKabels.clear();
+//    selectedSourceAansl.forEachFeature(function(featureSource){
+//        selectedSourceAansl.removeFeature(featureSource);
+//    });
+//    selectedSourceKabels.forEachFeature(function(featureKabel){
+//        selectedSourceKabels.removeFeature(featureKabel);
+//    });
 //    $('#KlakInfo').empty();
 //    $('#example').empty();
     //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
@@ -745,7 +751,26 @@ function createCircleOutOverlay(position, WelNiet) {
 }
 
 
-$(document).ready(function() {    
+$(document).ready(function() {
+    
+    function ZoekAdres() {
+       var AdresVeld = $("#adreszoeker") 
+       $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
+            var FoundExtent = data[0].boundingbox;
+            var placemark_lat = data[0].lat;
+            var placemark_lon = data[0].lon;
+
+            //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
+            var FoundMarker = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857')),
+    name: AdresVeld.value
+            });
+           selectedSourceAansl.addFeatures([FoundMarker]);
+
+           map.getView().setCenter(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857'));
+
+       });
+    }
     
     // grey out text of elements that are named 'disabled'
     $( "li" ).each(function() {
@@ -1340,22 +1365,16 @@ $(document).ready(function() {
         });
     
     $("#zoekadres").on('click', function() {
-       var AdresVeld = $("#adreszoeker") 
-       $.getJSON('http://nominatim.openstreetmap.org/search?format=json&q=' + AdresVeld.val(), function(data) {
-            var FoundExtent = data[0].boundingbox;
-            var placemark_lat = data[0].lat;
-            var placemark_lon = data[0].lon;
-            
-            //boundingbox is voor de extent en de lat en lon zijn voor een marker toe te voegen
-            var FoundMarker = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857')),
-  name: AdresVeld.value
-            });
-           selectedSourceAansl.addFeatures([FoundMarker]);
-           
-           map.getView().setCenter(ol.proj.transform([Number(placemark_lon), Number(placemark_lat)], 'EPSG:4326', 'EPSG:3857'));
-        
-       });
+                       ZoekAdres();
+    });
+    
+    //Onderstaande is voor de adresbalk bovenstaande is voor de knop "zoeken"
+    
+    $("#adreszoeker").keypress(function (e) {
+        //e.which == 13 is de enter knop
+       if (e.which == 13){
+        ZoekAdres();   
+       }
     });
     
     //MSR selecteren en onderliggende aansluitingen weergeven
