@@ -414,6 +414,25 @@ var Ycor;
 var Xcor;
 var liveKLAK;
 var i;
+var discipline = "Elektrisch";
+var urgentie = "US";
+
+
+    $('#toggle-elektrisch').on('click', function () {
+        KLAKLayer.setVisible(!KLAKLayer.getVisible());
+    });
+
+     $('#toggle-gas').on('click', function () { 
+     });         
+
+     $('#toggle-US-ZUS').on('click', function () {
+     }); 
+
+     $('#toggle-NUS').on('click', function () {      
+     }); 
+
+if ($('#toggle-elektrisch').is(":checked") == true && $('#toggle-gas').is(":checked") == true) {discipline = "" } else if ($('#toggle-elektrisch').is(":checked") == true && $('#toggle-gas').is(":checked") == false) {discipline = "Elektisch"} else if ($('#toggle-elektrisch').is(":checked") == false && $('#toggle-gas').is(":checked") == true) {discipline= "Gas"} else {discipline = "niks"}
+
 
 $.ajax({
     type: "GET",
@@ -421,12 +440,13 @@ $.ajax({
     dataType: "json",
     success: function(data){
     
-        // als de JSON data ophaal actie is gedaan wordt er een loop ingezet   
+        // als de JSON data ophaal actie een succes is, wordt er een loop ingezet   
         KLAKdata = data;
         
         for (i=0; i< KLAKdata.WorkOrders.length; i++){
-        if (KLAKdata.WorkOrders[i].Type == "Elektrisch" && KLAKdata.WorkOrders[i].Urgency == "US") { 
-            
+        if (KLAKdata.WorkOrders[i].Type == discipline && KLAKdata.WorkOrders[i].Urgency == urgentie ) { 
+       // if ( if (Evar == 1 && Gvar == 1) { } else if (Evar == 0 && Gvar == 1) {KLAKdata.WorkOrders[i].Type == "Gas" } else if (Evar == 1 && Gvar == 0) {KLAKdata.WorkOrders[i].Type == "Elektrisch" } else {KLAKdata.WorkOrders[i].Type == "niks" } && if (ZUSvar == 1 && NUSvar == 1) { } else if (ZUSvar == 0 && NUSvar == 1) {KLAKdata.WorkOrders[i].Type == "NUS" } else if (ZUSvar == 1 && NUSvar == 0) {KLAKdata.WorkOrders[i].Type == "US" } else {KLAKdata.WorkOrders[i].Type == "niks" }) {    
+        
         Xcor = KLAKdata.WorkOrders[i].X;
         Ycor = KLAKdata.WorkOrders[i].Y;    
     
@@ -561,7 +581,7 @@ var MSRLayer = new ol.layer.Vector({
     projection: 'EPSG:4326',
     style: styleFunction,
     name: 'MSRLayer',
-    maxResolution: 5
+    maxResolution: 4
 });
 
 //MSR MSO Lokatie projecteren
@@ -853,9 +873,7 @@ $(document).ready(function() {
     
  // Handle visibility control   
 //aan en uitzetten van layers
-    $('#toggle-ls-storingen').on('click', function () {
-        KLAKLayer.setVisible(!KLAKLayer.getVisible());
-    });
+
     
     $("#toggle-klic-werkzaamheden").on('click', function() {
         KlicLayer.setVisible(!KlicLayer.getVisible()); 
@@ -876,6 +894,12 @@ $(document).ready(function() {
     $("#toggle-msr").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
     });
+    
+    $("#toggle-PC4-laag").on('click', function() {
+        PC4Layer.setVisible(!PC4Layer.getVisible());
+    });    
+    
+    
     
     $("#toggle-info-box").change(function(){
         if($('#toggle-info-box').is(':checked')) {
