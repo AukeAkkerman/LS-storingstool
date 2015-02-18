@@ -131,7 +131,7 @@ var styles = {
       width: 1
     }),
     fill: new ol.style.Fill({
-      color: 'rgba(255, 255, 0, )'
+      color: 'rgba(255, 255, 0, 0.8)'
     })
   })],
   'Polygon': [new ol.style.Style({
@@ -248,7 +248,7 @@ var styleFunctionPC4 = function(feature, resolution) {
 
     return [new ol.style.Style({
         stroke: new ol.style.Stroke({
-          color: 'blue',
+          color: 'rgba(0, 0, 0, 0.5)',
           lineDash: [4],
           width: 1
         }),
@@ -258,7 +258,7 @@ var styleFunctionPC4 = function(feature, resolution) {
         text: new ol.style.Text({
             text: TextInhoud, 
             fill: new ol.style.Fill({
-                color: 'rgba(0, 0, 255, 1)'
+                color: 'rgba(0, 0, 0, 1)'
             }),
             stroke: new ol.style.Stroke({
                 color: 'rgba(0, 0, 0, 1)',
