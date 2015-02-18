@@ -1125,7 +1125,6 @@ $(document).ready(function() {
 //Aukes versie van de aansluitingen op de kabel en analyse van de KLAK meldingen aan de kabel
    
     $('#toon-aansl-aan-kabel').on('click', function(){
-        
         if(selectMouseClick) {
             var ExtentArray = [];
             var FeatureArray = [];
@@ -1259,21 +1258,22 @@ $(document).ready(function() {
                     //opmaak voor de lijst met gestoorde aansluitingen      
                     
                   
-                        $('#example').DataTable( {
-                                    "scrollCollapse": true,
-                                    "autoWidth":      false,
-                                    "paging":         true,
-                                    "retrieve":        true, 
-                                    "order": [[ 2, "desc" ]],
-                                    "columnDefs": [ { "width": "30%", "targets": 0 }]
-                        });
+                        $('#example').DataTable();
+//                        {
+//                            "scrollCollapse": true,
+//                            "autoWidth":      true,
+//                            "paging":         true,
+//                            "retrieve":        true, 
+//                            "order": [[ 2, "desc" ]],
+//                            "columnDefs": [ { "width": "30%", "targets": 0 }]
+//                        }
                         //vervolgens de tabbar openen waar de gegevens instaan
                     sidebar.open("storingsgegevens")
                         } }else {
          window.alert("You have not selected anything");
         }
 
-});
+    });
     
     $('#Help').on('click', function(){
         window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
