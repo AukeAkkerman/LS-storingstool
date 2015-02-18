@@ -1261,10 +1261,11 @@ $(document).ready(function() {
                   
                         $('#example').DataTable( {
                                     "scrollCollapse": true,
-                                    "autoWidth":      true,
-                                    "paging":         false,
+                                    "autoWidth":      false,
+                                    "paging":         true,
                                     "retrieve":        true, 
-                                    "order": [[ 2, "desc" ]]
+                                    "order": [[ 2, "desc" ]],
+                                    "columnDefs": [ { "width": "30%", "targets": 0 }]
                         });
                         //vervolgens de tabbar openen waar de gegevens instaan
                     sidebar.open("storingsgegevens")

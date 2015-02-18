@@ -10,8 +10,8 @@
     <link href="bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="bootstrap/dist/css/bootstrap-slider.css" rel="stylesheet" type="text/css">
 <!--    <link href="styles/layout.css" rel="stylesheet" type="text/css">-->
-<!--    <link href="styles/jquery.dataTables.css" rel="stylesheet" type="text/css">-->
-    <link href="styles/jquery.dataTables.min.css" rel="stylesheet" type="text/css">
+    <link href="styles/jquery.dataTables.css" rel="stylesheet" type="text/css">
+<!--    <link href="styles/jquery.dataTables.min.css" rel="stylesheet" type="text/css">-->
     <link href="styles/jquery.dataTables_themeroller.css" rel="stylesheet" type="text/css">
     <link href="styles/ol3-sidebar.min.css" rel="stylesheet" type="text/css">
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
@@ -84,7 +84,7 @@
                       <ul class="dropdown-menu">
 <li><label class="checkbox"><input type="checkbox" checked="checked" id="toggle-elektrisch">Elektrisch</label></li>
                       <li><label class="checkbox"><input type="checkbox" id="toggle-gas">Gas</label></li>
-                      <li><label class="checkbox"><input type="checkbox" checked="checked"id="toggle-US-ZUS">US en ZUS</label></li>
+                      <li><label class="checkbox"><input type="checkbox" checked="checked" id="toggle-US-ZUS">US en ZUS</label></li>
                       <li><label class="checkbox"><input type="checkbox" id="toggle-NUS">NUS</label></li>
                       </ul>
                     </li>
@@ -174,56 +174,33 @@
         <div id="sidebar" class="sidebar collapsed">
             <!-- Nav tabs -->
             <ul class="sidebar-tabs" role="tablist">
-                <li><a href="#home" role="tab"><i class="fa fa-bars"></i></a></li>
                 <li><a href="#ToggleLagen" role="tab"><i class="fa fa-eye"></i></a></li>
-                <li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
                 <li><a href="#storingsgegevens" role="tab"><i class="fa fa-tag"></i></a></li>
                 <li><a href="#monteuraansturen" role="tab"><i class="fa fa-wrench"></i></a></li>
+                <li><a href="#legenda" role="tab"><i class="fa fa-book"></i></a></li>
+
             </ul>
 
             <!-- Tab panes -->
             <div class="sidebar-content active">
-                <div class="sidebar-pane" id="home">
-                    <h1>sidebar-v2</h1>
-
-                    <p>A responsive sidebar for mapping libraries like <a href="http://leafletjs.com/">Leaflet</a> or <a href="http://openlayers.org/">OpenLayers</a>.</p>
-
-                    <p class="lorem">Content 1</p>
-
-                    <p class="lorem">Content 2</p>
-
-                    <p class="lorem">Concent 3</p>
-
-                    <p class="lorem">Content 4</p>
-                </div>
-                <div class="sidebar-pane" id="ToggleLagen"><h1>Lagen Aan/Uitzetten</h1>
-                <p2>Elektra</p2><br>
-                    LS
+                <div class="sidebar-pane" id="ToggleLagen">
+                    <input type="checkbox" id="toggle-info-box" class="switch" value="check" />
+                    <h1>Zichtbare Opties</h1>
+                    <label for="toggle-info-box">Info Box boven Assets</label><br><br>
                     
-                    <br>
-                <p2>Overige selecteren</p2><br>
-                <input type="checkbox" id="toggle-info-box" class="switch" value="check" />
-                <label for="toggle-info-box">Info Box boven Assets</label>
-                    
-                </div>
-
-                <div class="sidebar-pane" id="settings">
-                    <h1>Settings</h1>
-                    <div>
-                        <b>toon storingen vanaf <br></b><span id="ex6SliderVal1">31 dagen geleden</span> tot <span id="ex6SliderVal2">vandaag</span> <br> 
-                        <div class"row-fluid" width="100%">
-                        <input id="historyslider" type="text" class="span2" value="" data-slider-min="-365" data-slider-max="0" data-slider-step="1" data-slider-value="[-31,0]"  width="100%"/> 
-                        </div>
+                    <b>toon storingen vanaf <br></b><span id="ex6SliderVal1">31 dagen geleden</span> tot <span id="ex6SliderVal2">vandaag</span> <br> 
+                    <div class"row-fluid" width="100%">
+                    <input id="historyslider" type="text" class="span2" value="" data-slider-min="-365" data-slider-max="0" data-slider-step="1" data-slider-value="[-31,0]"  width="100%"/>
                     </div>
                 </div>
 
                 <div class="sidebar-pane" id="storingsgegevens"><h1>Geselecteerde Klanten</h1>
-                <table id="KlakInfo" width="100%"></table><br><br>
-                <table class="display" cellspacing="0" id="example"></table>
+                <table id="KlakInfo" width=inherit></table><br><br>
+                <table class="display" cellspacing="0" id="example" width=inherit></table>
                 </div>
                 <div class="sidebar-pane" id="monteuraansturen"><h1>Monteur Aansturen</h1>
-                
-                
+                </div>
+                <div class="sidebar-pane" id="legenda"><h1>Legenda</h1>
                 </div>
             </div>
         </div>
