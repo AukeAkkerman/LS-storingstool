@@ -31,9 +31,10 @@
 <body>
     <div class="container-fluid">
     <div class="row">
+    <a class="navbar-brand" href="#">TSC LS-storingstool</a>
     <div class="collapse navbar-collapse bs-example-js-navbar-collapse">
             <ul class="nav navbar-nav">
-                <li class="dropdown"><a href="#" data-toggle="dropdown">Kaartlagen Assets<b class="caret"></b></a>
+                <li class="dropdown"><a href="#" data-toggle="dropdown">Kaartlagen  <b class="caret"></b></a>
                   <ul class="dropdown-menu">
                     <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">Elektra</a>
                       <ul class="dropdown-menu">
@@ -44,41 +45,43 @@
                         <li><label class="checkbox" id="disabled"><input type="checkbox" disabled checked="checked" id="toggle-1">LS Schakelkasten</label></li>
                           </ul>
                         </li>
-                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">MS</a>
+                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" >MS</a>
                           <ul class="dropdown-menu">
                            <li><label class="checkbox"><input type="checkbox" checked="checked" id="toggle-ms-kabels">MS Kabels</label></li>
-                          <li><label class="checkbox"><input type="checkbox" checked="checked" id="toggle-msr-aansl">MSR</label></li>
+                          <li><label class="checkbox"><input type="checkbox" checked="checked" id="toggle-msr">MSR</label></li>
                           <li><label class="checkbox" id="disabled"><input type="checkbox" disabled id="toggle-2">BehuizingNR</label></li>
                           </ul>
                         </li>
-                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">HS</a>
+                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" id="disabled">HS</a>
                           <ul class="dropdown-menu">
-                            <li><a href="#" tabindex="-1">Onderstation</a></li> 
-                            <li><a href="#" tabindex="-1">HS Kabels</a></li>
+                            <li><a href="#" tabindex="-1" id="disabled">Onderstation</a></li> 
+                            <li><a href="#" tabindex="-1" id="disabled">HS Kabels</a></li>
                           </ul>
                         </li>
                       </ul>
                     </li>
-                    <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">Gas</a>
+                    <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" id="disabled">Gas</a>
                       <ul class="dropdown-menu">
-                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">LD</a>
+                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" id="disabled">LD</a>
                           <ul class="dropdown-menu">
-                            <li><a href="#" tabindex="-1">LD Leidingen</a></li>
-                            <li><a href="#" tabindex="-1">LD Stations</a></li>
-                            <li><a href="#" tabindex="-1">Overslagstations</a></li>
+                            <li><a href="#" tabindex="-1" id="disabled">LD Leidingen</a></li>
+                            <li><a href="#" tabindex="-1" id="disabled">LD Stations</a></li>
+                            <li><a href="#" tabindex="-1" id="disabled">Overslagstations</a></li>
                           </ul>
                         </li>
-                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">HD</a>
+                        <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" id="disabled">HD</a>
                           <ul class="dropdown-menu">
-                            <li><a href="#" tabindex="-1">HD Leidingen</a></li>
-                            <li><a href="#" tabindex="-1">GOS</a></li>
+                            <li><a href="#" tabindex="-1" id="disabled">HD Leidingen</a></li>
+                            <li><a href="#" tabindex="-1" id="disabled">GOS</a></li>
                           </ul>
                         </li>
                       </ul>
                     </li>
+                        <li><label class="checkbox"><input type="checkbox" checked="checked" id="toggle-PC4-laag">Postcode 4 laag</label></li>
+                        <li><label class="checkbox"><input type="checkbox" id="toggle-klic-werkzaamheden">KliC aanvragen</label></li>
                   </ul>
                 </li>
-                <li class="dropdown"><a href="#" data-toggle="dropdown">Storings Lagen<b class="caret"></b></a>
+                <li class="dropdown"><a href="#" data-toggle="dropdown">Storings Lagen  <b class="caret"></b></a>
                   <ul class="dropdown-menu">
                     <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">Actuele Storingen</a>
                       <ul class="dropdown-menu">
@@ -89,68 +92,63 @@
                       </ul>
                     </li>
                     <li><label class="checkbox"><input type="checkbox" id="toggle-toon-storingshistorie">Storingshistorie</label></li>
-                    <li><a href="#" tabindex="-1" id="toggle-klic-werkzaamheden">KliC werkzaamheden</a></li>
-                    <li><a href="#" tabindex="-1" id="toggle-PC4-laag">Postcode 4 laag</a></li>
+                    <li><a href="#" tabindex="-1" id="disabled">Geplande werkzaamheden</a></li>
                   </ul>
                 </li>
-                <li class="dropdown"><a href="#" data-toggle="dropdown">Intake</a>
+<!--                <li class="dropdown"><a href="#" data-toggle="dropdown">Intake</a>
                   <ul class="dropdown-menu">
                     <li><a href="#" tabindex="-1">Intake tool 1</a></li>
                     <li><a href="#" tabindex="-1">Intake tool 2</a></li>
                     <li><a href="#" tabindex="-1">Intake tool 3</a></li>
                     <li><a href="#" tabindex="-1">Intake tool 4</a></li>
                     </ul>
-                </li>
+                </li>-->
                 <li class="dropdown"><a href="#" data-toggle="dropdown">Analyseren Storing</a>
                   <ul class="dropdown-menu">
                     <li><a href="#" tabindex="-1" id="toon-achterl-kabel">Toon Achterliggende Hoofdleiding en MSR</a></li>
                       <li><a href="#" tabidex="-1" id="toon-aansl-aan-kabel">Rapporteer aansluitingen aan gezamelijke kabel</a></li>
+                      <li><a href="#" tabindex="-1" id="MSR-onderliggen-aansl">Toon aansluitingen aan MSR</a></li>
+                      <li role="presentation" class="divider"></li>
                       <li><a href="#" tabidex="-1" id="ping-sm-aan-kabel">Ping slimme meters aan kabel</a></li>
                       <li><a href="#" tabidex="-1" id="ping-sm-afstand">Ping Slimme Meters binnen bepaalde afstand</a></li>
-                    <li><a href="#" tabindex="-1" id="toggle-twitter-feeds">Analyseer Twitterfeeds rondom storingen</a></li>
-                    <li><a href="#" tabindex="-1" id="MSR-onderliggen-aansl">Toon aansluitingen aan MSR</a></li>
                   </ul>
                 </li>
             <li class="dropdown"><a href="#" data-toggle="dropdown">Aansturen Monteur</a>
                 <ul class="dropdown-menu">
-                    <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">Oproepbare Monteurs</a>
+                    <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" id="disabled">Oproepbare Monteurs</a>
                       <ul class="dropdown-menu">
-                        <li><a href="#" tabindex="-1">Elektra</a></li>
-                        <li><a href="#" tabindex="-1">Gas</a></li>
+                        <li><a href="#" tabindex="-1" id="disabled">Elektra</a></li>
+                        <li><a href="#" tabindex="-1" id="disabled">Gas</a></li>
                       </ul>
                     </li>
-                    <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown">Rooster Monteurs</a>
+                    <li class="dropdown-submenu"><a href="#" tabindex="-1" data-toggle="dropdown" id="disabled">Rooster Monteurs</a>
                       <ul class="dropdown-menu">
-                        <li><a href="#" tabindex="-1">Huidige oproepbaarheid</a></li>
-                        <li><a href="#" tabindex="-1">Ingeplande werkzaamheden</a></li>
-                        <li><a href="#" tabindex="-1">Historie Werkzaamheden</a></li>
+                        <li><a href="#" tabindex="-1" id="disabled">Huidige oproepbaarheid</a></li>
+                        <li><a href="#" tabindex="-1" id="disabled">Ingeplande werkzaamheden</a></li>
+                        <li><a href="#" tabindex="-1" id="disabled">Historie Werkzaamheden</a></li>
                       </ul>
                     </li>
-                    <li><a href="#" tabindex="-1" id="export-png">Download kaart</a></li>
-                    <li><a href="#" tabindex="-1">Teamleiders Monteurs</a></li>
-                    <li><a href="#" tabindex="-1" id="klak-naar-monteur">Wijs geselecteerde KLAK meldingen toe aan monteur</a></li>
+<!--                    <li><a href="#" tabindex="-1" id="export-png">Download kaart</a></li>-->
+<!--                <li><a href="#" tabindex="-1">Teamleiders Monteurs</a></li>-->
+                    <li><a href="#" tabindex="-1" id="klak-naar-monteur">Verstuur storingsinfo naar monteur</a></li>
                   </ul>
             </li>
         <li class="dropdown"><a href="#" data-toggle="dropdown">Vastleggen Storingsverloop</a>
                   <ul class="dropdown-menu">
                     <li><a href="#" tabindex="-1" id="lijst-gest-aansl">Lijst met gestoorde aansluitingen</a></li>
-                    <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 2</a></li>
-                    <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 3</a></li>
-                    <li><a href="#" tabindex="-1">Vastleggen Storingsverloop tool 4</a></li>
             </ul>
                 </li>
                 <li class="dropdown"><a href="#" data-toggle="dropdown">Klantcontact</a>
                   <ul class="dropdown-menu">
-                    <li><a href="#" tabindex="-1">Klantcontact tool 1</a></li>
-                    <li><a href="#" tabindex="-1">Klantcontact tool 2</a></li>
-                    <li><a href="#" tabindex="-1">Klantcontact tool 3</a></li>
-                    <li><a href="#" tabindex="-1">Klantcontact tool 4</a></li>
+                    <li><a href="#" tabindex="-1">Verstuur sms naar getroffen klanten</a></li>
                     </ul>
                 </li>
                 <li><a href="#" tabindex="-1" id="Help">Help</a></li>
-                <li><a href="#" tabindex="-1" id="deselect-storing">Deselect storing</a></li>
+                <li class="nav navbar-nav navbar-right"><a href="#" tabindex="-1" id="deselect-storing"><b>Deselect storing</b></a></li>
               </ul>
         </div>
+
+
         
     <div class="row">
       <div class="col-lg-6">
