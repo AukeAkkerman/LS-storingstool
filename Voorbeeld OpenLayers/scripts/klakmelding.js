@@ -1322,6 +1322,7 @@ $(document).ready(function() {
     
     $('#lijst-gest-aansl').on('click', function(){
         var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
+        
         // de aansluitings features weer ophalen    
             if(selectMouseClick) {
                     var FeatureArray = [];
@@ -1350,28 +1351,34 @@ $(document).ready(function() {
 //                    var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
                     CompensatieWindow.document.write("<table id='comptab'>");
                     var CompensatieTabel = CompensatieWindow.document.getElementById('comptab');
-                    var content = "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
+                    var content = "<thead><tr><td><b>Fase</td><td><b>Postcode + Adres</td><td><b>Straat</td><td><b>Woonplaats</td><td><b>EAN</b></td><td><b>Bedrag</b></td><td><b>Uitgekeerd</b></td></tr></thead>"
 
                     //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
                     for(var i = 0; i < FeatureArray.length; i++){
-                    var TijdKlak = selectedFeature.get("Geregistreerd_op");
-                    var EAN = FeatureArray[i].get("EAN");
-                    var Functie = FeatureArray[i].get("FUNCTIE");    
-                    var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
-                    var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
-                    content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
-                    }
-                    content += "</table>"
-                    CompensatieTabel.innerHTML = content;
-
-        //hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
-//                    CompensatieWindow.document.getElementById('#comptab').DataTable( {
-                    CompensatieTabel.DataTable( {
-
-                                "paging":         false,
-                                "retrieve":        true, 
-                                "order": [[ 2, "desc" ]]
-                                }); 
+                        var Fase = "Onbekend";
+                        var AriAdres = FeatureArray[i].get("ARI_ADRES");
+                        var Straat = "Onbekend";
+                        var Plaats = "Onbekend";
+                        var EAN = FeatureArray[i].get("EAN");
+                        var Bedrag = "100 Miljoen Miljard";
+                        var Uitgekeerd = "Ja";
+                        content += "<tr><td> " + Fase + " </td><td> " + AriAdres + " </td><td> " + Straat + " </td><td> " + Plaats + " </td><td> " +  EAN + " </td><td>" + Bedrag + " </td><td> " + " </td><td> " + Uitgekeerd + " </td></tr>";
+                        }
+                        content += "</table>"
+                        CompensatieTabel.innerHTML = content;
+                        
+                        var h = CompensatieWindow.document.getElementsByTagName('head').item(0);
+                        var s = CompensatieWindow.document.createElement("link");
+                        s.href = "styles/jquery.dataTables.css";
+                        s.type = "text/css";
+                        s.rel = "stylesheet";
+                        var t = CompensatieWindow.document.createElement("script");
+                        t.src = "scripts/jquery.dataTables.js";
+                        h.appendChild(s);
+                        h.appendChild(t);
+            //hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
+    //                    CompensatieWindow.document.getElementById('#comptab').DataTable( {
+                        CompensatieTabel.DataTable(); 
                 }else {
                  window.alert("You have not selected anything");
                 }
