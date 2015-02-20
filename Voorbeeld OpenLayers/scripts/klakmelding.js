@@ -82,7 +82,7 @@ var projection = ol.proj.get('EPSG:3857');
 var Alkmaar = ol.proj.transform([4.75355239868168, 52.62976657605367], 'EPSG:4326', 'EPSG:3857');
 
 //Projectie definiëren voor 
-proj4.defs("EPSG:28992","+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=m +no_defs");
+proj4.defs("EPSG:28992","+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 +units=mm +no_defs");
 var projectionNL = ol.proj.get('EPSG:28992');
 projectionNL.setExtent([646.36, 308975.28, 276050.82, 636456.31]);
 
@@ -381,6 +381,77 @@ var styleFunctionMS = function(feature, resolution) {
     return stylesMS[feature.getGeometry().getType()]; 
 };
 
+// OVL style
+var stylesOVL = {
+'Point': [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 4,
+            fill: new ol.style.Fill({
+                color   : 'rgba(200,210,210,0.1)'
+            }),
+            stroke: new ol.style.Stroke({color: 'green', width: 1})
+            })
+    })]
+};
+var styleFunctionOVL = function(feature, resolution) {
+    return stylesOVL[feature.getGeometry().getType()]; 
+};
+
+// Mof style
+var stylesMof = {
+'Point': [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 3,
+            fill: new ol.style.Fill({
+                color   : 'rgba(200,50,50,0.8)'
+            }),
+            stroke: new ol.style.Stroke({color: 'rgba(200,50,50,1)', width: 1})
+            })
+    })]
+};
+var styleFunctionMof = function(feature, resolution) {
+    return stylesMof[feature.getGeometry().getType()]; 
+};
+
+// KLIC layer style
+var stylesKLIC = {
+   'Point': [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 6,
+            fill: new ol.style.Fill({
+                color   : 'rgba(250,0,50,0.7)'
+            }),
+            stroke: new ol.style.Stroke({color: 'red', width: 1})
+            })
+    })],
+    'LineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(250,165,0,0.6)',
+      width: 6
+    })
+  })],
+      'MultiLineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(250,165,0,0.6)',
+      width: 6
+    })
+  })],    
+'Polygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(80, 60, 50, 1)',
+      lineDash: [4],
+      width: 1
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(80, 60, 50, 0.8)'
+    })
+  })]
+};
+var styleFunctionKLIC = function(feature, resolution) {
+    return stylesKLIC[feature.getGeometry().getType()]; 
+};
+
+
 /////////////////////////////
 //Lagen
 /////////////////////////////
@@ -493,23 +564,41 @@ $.ajax({
 });
 };
 
-//Kabels inladen
+//LS Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/MV_NRG_LS_KABELS.GeoJSON'
 });
 
-//Aansluitingen inladen
+//LS Aansluitingen inladen
 var vectorSourceAansl = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/MV_NRG_LS_AANSLUITING.GeoJSON'
 });
 
+//LS moffen inladen
+var vectorSourceLSMof = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/MV_NRG_LS_MOF.GeoJSON'
+});
+
+//KLIC meldingen inladen
+var vectorSourceKLIC = new ol.source.GeoJSON({
+    defaultProjection: projectionNL,
+    projection: 'EPSG:3857',
+    url: 'data/KLIC_MELDINGEN.GeoJSON'
+});
+
+//Selectielagen
 var selectedSourceAansl = new ol.source.Vector({
     projection: 'EPSG:3857'
 }); 
 
 var selectedSourceKabels = new ol.source.Vector({
+    projection: 'EPSG:3857'
+}); 
+
+var selectedSourceLSMof = new ol.source.Vector({
     projection: 'EPSG:3857'
 }); 
 
@@ -536,18 +625,6 @@ var vectorSourcePC4 = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/PC4_gebieden.GeoJSON'
 });
-
-/*//klantgegevens inladen
-var ImpactKlanten = $.ajax({
-    type: "GET",
-    url: 'data/ImpactKlantenKenM.JSON',
-    dataType: "json",
-    success: function(data){
-    
-        // als de JSON data ophaal actie een succes is, wordt er een loop ingezet   
-        ImpactKlanten = data;
-    }
-});*/
 
 //LS OV (openbare verlichting)
 var vectorSourceLSOV = new ol.source.GeoJSON({
@@ -590,9 +667,22 @@ var AanslLayer = new ol.layer.Vector({
     source: vectorSourceAansl,
     projection: 'EPSG:4326',
     style: styleFunction,
-    name: 'AanslLayer',
-    maxResolution: 2
+    name: 'MofLayer',
+    maxResolution: 2,
+
 });
+
+//moffen projecteren
+var MofLayer = new ol.layer.Vector({
+    source: vectorSourceLSMof,
+    projection: 'EPSG:4326',
+    style: styleFunctionMof,
+    name: 'MofLayer',
+    maxResolution: 2,
+    visible: false
+});
+
+
 
 //MS Kabels projecteren
 var KabelLayerMS = new ol.layer.Vector({
@@ -612,7 +702,7 @@ var MSRLayer = new ol.layer.Vector({
     maxResolution: 4
 });
 
-//MSR MSO Lokatie projecteren
+//LS- en koppelkasten Lokatie projecteren
 var RuimteLocLayer = new ol.layer.Vector({
     source: vectorSourceMSRLoc,
     projection: 'EPSG:4326',
@@ -622,20 +712,30 @@ var RuimteLocLayer = new ol.layer.Vector({
 });
 
 
+//KLIC layer projecteren
+var KLICLayer = new ol.layer.Vector({
+    source: vectorSourceKLIC,
+    projection: 'EPSG:4326',
+    style: styleFunctionKLIC,
+    name: 'KLICLayer'
+});
+
+
 //PC4en projecteren
 var PC4Layer = new ol.layer.Vector({
     source: vectorSourcePC4,
     projection: 'EPSG:4326',
     style: styleFunctionPC4,
     name: 'PC4_gebieden',
-    minResolution: 6
+    minResolution: 6,
+    visible: false
 });
 
 //LS OV projecteren
 var LSOVLayer = new ol.layer.Vector({
     source: vectorSourceLSOV,
     projection: 'EPSG:4326',
-    style: styleFunction,
+    style: styleFunctionOVL,
     name: 'LS_OV',
     maxResolution: 2
 });
@@ -660,13 +760,14 @@ var selectedLayerAansl = new ol.layer.Vector({
     name: "selectedLayerAansl"
 });
 
+
 var raster = new ol.layer.Tile({
       source: new ol.source.MapQuest({layer: 'osm'})
 }); 
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, liveKLAKLayer, KLAKLayer, KabelLayerMS, MSRLayer, LSOVLayer, RuimteLocLayer, selectedLayerAansl, selectedLayerKabels],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, liveKLAKLayer, KLAKLayer, KabelLayerMS, MSRLayer, LSOVLayer, KLICLayer, RuimteLocLayer, MofLayer,   selectedLayerAansl, selectedLayerKabels],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -751,6 +852,9 @@ var selectMouseClick = new ol.interaction.Select({
 });
 map.addInteraction(selectMouseClick);
 
+
+
+//Deselecteren van onderzochte storing
  $("#deselect-storing").on('click', function() {
 //     selectedSourceAansl.clear();
 //     selectedSourceKabels.clear();
@@ -764,8 +868,9 @@ map.addInteraction(selectMouseClick);
 //    $('#example').empty();
     //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
 
-
-    
+//hiden van LS MOffen layer
+    MofLayer.setVisible(!MofLayer.getVisible()); 
+     
     //Deze onderstaande functie moet anders! De overlay zelf moet worden verwijderd en niet puur en alleen op de map, anders krijgen we een wildgroei aan overlays!
     for(var i=0; i < map.getOverlays().getLength() ; i++){
     map.removeOverlay(map.getOverlays().item(i));
@@ -938,7 +1043,7 @@ $(document).ready(function() {
 
     
     $("#toggle-klic-werkzaamheden").on('click', function() {
-        KlicLayer.setVisible(!KlicLayer.getVisible()); 
+        KLICLayer.setVisible(!KLICLayer.getVisible()); 
      });
     
     $("#toggle-ls-aansl").on('click', function() {
@@ -955,7 +1060,6 @@ $(document).ready(function() {
     
     $("#toggle-msr").on('click', function() {
         MSRLayer.setVisible(!MSRLayer.getVisible());
-        RuimteLocLayer.setVisible(!RuimteLocLayer.getVisible());
         
     });
     
@@ -963,7 +1067,18 @@ $(document).ready(function() {
         PC4Layer.setVisible(!PC4Layer.getVisible());
     });    
     
+    $("#toggle-1s-kasten").on('click', function() {
+        RuimteLocLayer.setVisible(!RuimteLocLayer.getVisible());
+    });   
     
+    $("#toggle-1s-moffen").on('click', function() {
+        MofLayer.setVisible(!MofLayer.getVisible());
+    });   
+
+    $("#toggle-1s-OV").on('click', function() {
+        LSOVLayer.setVisible(!LSOVLayer.getVisible());
+    });   
+        
     
     $("#toggle-info-box").change(function(){
         if($('#toggle-info-box').is(':checked')) {
@@ -1075,6 +1190,8 @@ $(document).ready(function() {
     //Achterliggende kabel tonen
     $('#toon-achterl-kabel').on('click', function(){
         if(selectMouseClick) {
+            
+            
             var ExtentArray = [];
             var FeatureArray = [];
             var AanslArray = [];
@@ -1083,28 +1200,27 @@ $(document).ready(function() {
             var KlakArray = []; 
             var MSRArray = [];
             
+            MofLayer.setVisible(!MofLayer.getVisible()); 
+            
             for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
                 var selectedFeature = features.item(k);
                 if (selectedFeature.get("Door")){
                     var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-        //            window.alert(ARI);
-                    //Find corresponding name in other layer
+
                     vectorSourceAansl.forEachFeature(function(featureAansl){
                         if (featureAansl.get("ARI_ADRES") == ARI) {
                             var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
                             var MSR_nr_aansl = featureAansl.get("NUMMER_BEHUIZING");
                             vectorSourceKabels.forEachFeature(function(featureKabel) {
                                 if (featureKabel.get("HOOFDLEIDING") == HLD_tevinden){
-        //                            KabelID.set("type", "LineStringSelected");
                                     ExtentArray.push(featureKabel.getGeometry().getExtent());
                                     FeatureArray.push(featureKabel);                            
                                 }
                             });
                             vectorSourceMSR.forEachFeature(function(featureMSR) {
                                 if (featureMSR.get("NUMMER_BEHUIZING") == MSR_nr_aansl){
-        //                            KabelID.set("type", "LineStringSelected");
                                     ExtentArray.push(featureMSR.getGeometry().getExtent());
                                     FeatureArray.push(featureMSR);
                                     MSRArray.push(featureMSR);
@@ -1116,16 +1232,18 @@ $(document).ready(function() {
                                     FeatureArray.push(featureAansl2);
                                     AanslArray.push(featureAansl2);
                                     
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
+                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
                                     SMArray.push(featureAansl2);}
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
-                                    SMOffArray.push(featureAansl2);}                                    
-
+                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
+                                SMOffArray.push(featureAansl2);}  
                                 }
-                            });                            
+                            });
+                            
                         } 
                     });
                 } else if (selectedFeature.get("SlimmeMeter")){
+                    
+                // versie voor het selecteren van een aansluiting    
                 var HLD_tevinden = selectedFeature.get("HOOFDLEIDING");
                 var MSR_nr_aansl = selectedFeature.get("NUMMER_BEHUIZING");
                 vectorSourceKabels.forEachFeature(function(featureKabel) {
@@ -1141,19 +1259,20 @@ $(document).ready(function() {
                         MSRArray.push(featureMSR);
                     }
                 });
-                            vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
-                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
-                                    FeatureArray.push(featureAansl2);
-                                    AanslArray.push(featureAansl2);
+                    
+                vectorSourceAansl.forEachFeature(function(featureAansl2){
+                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
+                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
+                    FeatureArray.push(featureAansl2);
+                    AanslArray.push(featureAansl2);
                                     
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
-                                    SMArray.push(featureAansl2);}
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
-                                    SMOffArray.push(featureAansl2);}                                    
+                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
+                        SMArray.push(featureAansl2);}
+                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
+                        SMOffArray.push(featureAansl2);}                                    
 
-                                }
-                            });  
+                    }
+                    });  
                     
                 
             } else {
