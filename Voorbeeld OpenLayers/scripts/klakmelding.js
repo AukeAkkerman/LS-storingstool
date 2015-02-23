@@ -238,11 +238,11 @@ styleFunctionClick = function(feature, resolution) {
 var styleFunctionPC4 = function(feature, resolution) {
     
     var TextInhoud = feature.get('PC4CODE') + '\n ' + feature.get('PC4NAAM');
-    if(map.getView().getZoom() >=13) {
+    if(map.getView().getZoom() >= 13) {
         TextInhoud = feature.get('PC4CODE') + '\n ' + feature.get('PC4NAAM');
-    } else if (map.getView().getZoom() < 13 && map.getView().getZoom() >= 10) {
+    } else if (map.getView().getZoom() < 13 && map.getView().getZoom() >= 11) {
         TextInhoud = feature.get('PC4CODE');
-    } else if (map.getView().getZoom() < 10) {
+    } else if (map.getView().getZoom() < 11) {
         TextInhoud = '';
     }
 
