@@ -53,7 +53,36 @@ function addDays(theDate, days) {
     return new Date(theDate.getTime() + days*24*60*60*1000);
 }
 
+function myTimer() {
+    var d = historyslidervalue;
+    if (previoushistoryslidervalue[0]!=d[0] || previoushistoryslidervalue[1]!=d[1])
+    {
+        previoushistoryslidervalue=d;
+        map.updateSize()
+    }
+    currentzoomlevel=map.getView().getZoom();
+    if (currentzoomlevel>12)
+    {
+        currentclusterdistance=0;
+    }
+    else
+    {
+        if (currentzoomlevel<10)
+        {
+            currentclusterdistance=32;
+        }
+        else
+        {
+            currentclusterdistance=16;
+        }
+    }
+    
+}
 
+function isCluster(feature) {
+  if (!feature || !feature.get('features')) { return false; }
+  return feature.get('features').length > 1;
+}
 
 
 function eliminateDuplicates(arr) {
@@ -74,8 +103,11 @@ function eliminateDuplicates(arr) {
 //Voorbeeldscript voor Map met mouseover
 //TODO:
 
-//keep track of KLAK history slider values
+//keep track of KLAK history slider values and related values
 var historyslidervalue=[-31,0];
+var previoushistoryslidervalue=[-31,0];
+var currentzoomlevel=100;
+var currentclusterdistance=10;
 
 var projection = ol.proj.get('EPSG:3857');
 
@@ -470,9 +502,115 @@ var vectorSourceKLAKHistory = new ol.source.GeoJSON({
     strategy: 'ol.Strategy.Box'
 });
 
-var vectorSourceKLAKHistoryDummy = new ol.source.Vector({
-    projection: 'EPSG:3857'
-}); 
+var clusterSourceKLAKHistory = new ol.source.Cluster({
+  //distance: 3,
+    distance: currentclusterdistance,
+    source: vectorSourceKLAKHistory,
+});
+
+var styleCache = {};
+var KLAKLayerHistory = new ol.layer.Vector({
+  visible: false,
+    name: KLAKLayerHistory,
+  source: clusterSourceKLAKHistory,
+  style: function(feature, resolution) {
+    var size = feature.get('features').length;
+      
+    
+      
+    var ft =   feature.get('features');
+    var fvis = false;
+    var filteredsize = 0;
+    
+    for (index = 0; index < ft.length; ++index) 
+    {
+        //console.log(a[index]);
+        var parts  = ft[index].get('BEGIN_STORING');
+        var Klak_BEGIN_STORING = new Date(1995,1,1);
+
+        if (typeof parts !== "undefined")  
+        {
+            parts = parts.split('-');
+            if (parts.length > 2)
+            {
+                var year = parseInt("20"+parts[2]);
+                var dt1  = parseInt(parts[0]);
+                var mon1 = parseInt(parts[1]);
+                Klak_BEGIN_STORING = new Date(year,mon1-1,dt1);
+            }
+
+        }
+
+        var fromdate = addDays(new Date(2015,0,31),historyslidervalue[0]);
+        var todate = addDays(new Date(2015,0,31),historyslidervalue[1]);
+
+        if (Klak_BEGIN_STORING >= fromdate && Klak_BEGIN_STORING <= todate)
+        {
+            fvis = true;
+            filteredsize=filteredsize+1;
+        }
+
+    }
+      
+         
+    var style = styleCache[filteredsize];
+    
+        if (filteredsize>=1)
+        {
+            if (filteredsize>1) 
+            {
+                if (!style) {
+                    style = [new ol.style.Style({
+                    image: new ol.style.Icon(({
+                    src: 'Klakmelding/telefoon_grijs.png'
+                    })),
+                      /*
+                    image: new ol.style.Circle({
+                      radius: 10,
+                      stroke: new ol.style.Stroke({
+                        color: '#fff'
+                      }),
+                      fill: new ol.style.Fill({
+                        color: '#3399CC'
+                      })
+                    }),
+                      */
+                    text: new ol.style.Text({
+                      text: filteredsize.toString(),
+                      fill: new ol.style.Fill({
+                        color: '#fff'
+                      })
+                    })
+                  })];
+                  styleCache[filteredsize] = style;
+                }
+
+                return style;
+                
+            }
+            else
+            {
+                 if (!style) {
+                    style = [new ol.style.Style({
+                    image: new ol.style.Icon(({
+                    src: 'Klakmelding/telefoon_grijs.png'
+                    }))
+                  })];
+                  styleCache[filteredsize] = style;
+                }
+                return style;
+            }
+        } 
+        else
+        {
+            return stylesKLAKHistoryInvisible;
+            //style = stylesKLAKHistoryInvisible;
+            //styleCache[size] = style;
+        }
+    
+    return style;
+  }
+});
 
 //script om live KLAK data op te halen
 
@@ -643,6 +781,7 @@ var KLAKLayer = new ol.layer.Vector({
 });
 
 
+/*
 //Klakmeldingen history projecteren
 var KLAKLayerHistory = new ol.layer.Vector({
     source: vectorSourceKLAKHistory,
@@ -652,6 +791,7 @@ var KLAKLayerHistory = new ol.layer.Vector({
     name: 'KLAKLayerHistory',
     visible: false
 });
+*/
 
 //LS Kabels projecteren
 var KabelLayer = new ol.layer.Vector({
@@ -801,45 +941,73 @@ var displayFeatureInfo_MouseOver = function(pixel) {
     return [feature, layer];
   });
   if (featureInfo) {
-    info.tooltip('hide')
-    if (featureInfo[1].get("name") == "KLAKLayer") {
-        info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klantnaam: " + featureInfo[0].get('Klant') + "\n" + "Straatnaam: " + featureInfo[0].get('STRAAT') + " " + featureInfo[0].get('NR') + "\n" +  "Ingevoerd door: " + featureInfo[0].get("Door")])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-    } else if (featureInfo[1].get("name") == "KLAKLayerHistory") {
-        info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klak nr: " + featureInfo[0].get('KLAK') + "\n" + "Component: " + featureInfo[0].get('COMPONENT') + "\n" + "Oorzaak: " + featureInfo[0].get('OORZAAK') + "\n" + "Aantal aansl.: "+ featureInfo[0].get('AANT_AANSL') + "\n" + "Monteur: " + featureInfo[0].get("MONTEUR")])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-    } else if (featureInfo[1].get("name") == "AanslLayer") {
-        info.attr('data-original-title', ["AANSLUITING " + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-    } else if (featureInfo[1].get("name") == "KabelLayer") {
-        info.attr('data-original-title', ["KABEL " + "\n" + "Hoofdleiding NR: " + featureInfo[0].get('HOOFDLEIDING') + "\n" + "Uitvoering: " + featureInfo[0].get('UITVOERING_SCHETS') + "\n" +  "Lengte: " + featureInfo[0].get('LIGGING_Length')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-/*    } else if (featureInfo[1].get("name") == "selectedLayerKabels") {
-        info.attr('data-original-title', ["KABEL AAN AANSLUITING" + "\n" + "Hoofdleiding NR: " + featureInfo[0].get('HOOFDLEIDING') + "\n" + "Uitvoering: " + featureInfo[0].get('UITVOERING_SCHETS') + "\n" +  "Lengte: " + featureInfo[0].get('LIGGING_Length')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');*/
-    /*} else if (featureInfo[1].get("name") == "selectedLayerAansl") {
-        info.attr('data-original-title', ["AANSLUITING AAN ZELFDE KABEL" + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');*/
+	if (!isCluster(featureInfo[0])) {
+		info.tooltip('hide')
+		if (featureInfo[1].get("name") == "KLAKLayer") {
+			info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klantnaam: " + featureInfo[0].get('Klant') + "\n" + "Straatnaam: " + featureInfo[0].get('STRAAT') + " " + featureInfo[0].get('NR') + "\n" +  "Ingevoerd door: " + featureInfo[0].get("Door")])
+			info.tooltip('fixTitle')
+			info.tooltip('show');
+		} else if (featureInfo[1].get("name") == "KLAKLayerHistory") {
+			info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klak nr: " + featureInfo[0].get('KLAK') + "\n" + "Component: " + featureInfo[0].get('COMPONENT') + "\n" + "Oorzaak: " + featureInfo[0].get('OORZAAK') + "\n" + "Aantal aansl.: "+ featureInfo[0].get('AANT_AANSL') + "\n" + "Monteur: " + featureInfo[0].get("MONTEUR")])
+			info.tooltip('fixTitle')
+			info.tooltip('show');
+		} else if (featureInfo[1].get("name") == "AanslLayer") {
+			info.attr('data-original-title', ["AANSLUITING " + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
+			info.tooltip('fixTitle')
+			info.tooltip('show');
+		} else if (featureInfo[1].get("name") == "KabelLayer") {
+			info.attr('data-original-title', ["KABEL " + "\n" + "Hoofdleiding NR: " + featureInfo[0].get('HOOFDLEIDING') + "\n" + "Uitvoering: " + featureInfo[0].get('UITVOERING_SCHETS') + "\n" +  "Lengte: " + featureInfo[0].get('LIGGING_Length')])
+			info.tooltip('fixTitle')
+			info.tooltip('show');
+	/*    } else if (featureInfo[1].get("name") == "selectedLayerKabels") {
+			info.attr('data-original-title', ["KABEL AAN AANSLUITING" + "\n" + "Hoofdleiding NR: " + featureInfo[0].get('HOOFDLEIDING') + "\n" + "Uitvoering: " + featureInfo[0].get('UITVOERING_SCHETS') + "\n" +  "Lengte: " + featureInfo[0].get('LIGGING_Length')])
+			info.tooltip('fixTitle')
+			info.tooltip('show');*/
+		/*} else if (featureInfo[1].get("name") == "selectedLayerAansl") {
+			info.attr('data-original-title', ["AANSLUITING AAN ZELFDE KABEL" + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
+			info.tooltip('fixTitle')
+			info.tooltip('show');*/
+		}
+		 else if (featureInfo[1].get("name") == "MSRLayer") {
+			info.attr('data-original-title', ["MSR" + "\n" + "Nummer behuizing: " + featureInfo[0].get('NUMMER_BEHUIZING') + "\n" + "Aparte Looproute: " + featureInfo[0].get('LOOPROUTE_RIJROUTE') + "\n" +  "Straatnaam " + featureInfo[0].get('STRAATNAAM') + "\n" + "Sleutelkast?: " + featureInfo[0].get('SLEUTELKASTJE_')])
+			info.tooltip('fixTitle')
+			info.tooltip('show');
+	  } else if (featureInfo[1].get("name") == "KabelLayerMS") {
+			info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
+	  } else if (featureInfo[1].get("name") == "liveKLAKLayer") {
+			info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
+			info.tooltip('fixTitle')
+            info.tooltip('show');
+            }
+        }
+        else 
+        {
+            // is a cluster, so loop through all the underlying features
+            if (true) //(featureInfo[1].get("name") == "KLAKLayerHistory") 
+            {
+                //KlakLayerHistory
+                var features = featureInfo[0].get('features');
+                var teksty = "";
+                for(var i = 0; i < features.length; i++) 
+                {
+                // here you'll have access to your normal attributes:
+                //console.log(features[0][i].get('name'));
+                    teksty = teksty+ "KLAKMELDING" + (i+1) + "\n" +  "Klak nr: " + features[i].get('KLAK') + "\n" +  "BEGIN STORING: " + features[i].get('BEGIN_STORING') + "\n" + "Component: " + features[i].get('COMPONENT') + "\n" + "Oorzaak: " + features[i].get('OORZAAK') + "\n" + "Aantal aansl.: "+ features[i].get('AANT_AANSL') + "\n" + "Monteur: " + features[i].get("MONTEUR")  + "\n" + "\n";
+                    
+                }
+                info.attr('data-original-title', teksty);
+                info.tooltip('fixTitle');
+                info.tooltip('show');
+            }
+            else
+            {
+                info.tooltip('hide');
+            }
+        }
     }
-     else if (featureInfo[1].get("name") == "MSRLayer") {
-        info.attr('data-original-title', ["MSR" + "\n" + "Nummer behuizing: " + featureInfo[0].get('NUMMER_BEHUIZING') + "\n" + "Aparte Looproute: " + featureInfo[0].get('LOOPROUTE_RIJROUTE') + "\n" +  "Straatnaam " + featureInfo[0].get('STRAATNAAM') + "\n" + "Sleutelkast?: " + featureInfo[0].get('SLEUTELKASTJE_')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-  } else if (featureInfo[1].get("name") == "KabelLayerMS") {
-        info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
-  } else if (featureInfo[1].get("name") == "liveKLAKLayer") {
-        info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
-        info.tooltip('fixTitle')
-        info.tooltip('show');
-  }} else {
+    else {
     info.tooltip('hide');
-  }
+    }
 };
 
 
@@ -951,7 +1119,6 @@ $(document).ready(function() {
                 var histend=historyslidervalue[1];
                 $("#ex6SliderVal1").text(slidestart);
                 $("#ex6SliderVal2").text(slideend);
-                map.updateSize()
                 
                 /*
                 map.getLayers().forEach(function(layer) {
@@ -985,7 +1152,9 @@ $(document).ready(function() {
         
     });
     
-    
+	//start timer function each second
+    var myVar=setInterval(function () {myTimer()}, 1000);
+	
     //export to CSV functie
     function exportTableToCSV($table, filename) {
 
@@ -1745,7 +1914,7 @@ $(document).ready(function() {
         if (KLAKLayerHistory.getVisible())
         {
             //vervolgens de tabbar openen waar de gegevens instaan
-            sidebar.open("settings");
+            sidebar.open("ToggleLagen");
         }
                      
     });
