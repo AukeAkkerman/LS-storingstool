@@ -881,10 +881,11 @@ var displayFeatureInfo_MouseOver = function(pixel) {
         info.attr('data-original-title', ["KLIC Melding" + "\n" + "Startdatum: " + featureInfo[0].get('DATUMAANVANGWERKZAAMHEDEN') + "\n" + "Einddatum: " + featureInfo[0].get('DATUMEINDWERKZAAMHEDEN') + "\n" +  "Opdrachtgever telnr: " + featureInfo[0].get('OPDRGVR_TELNR') + "\n" +  "Graver: " + featureInfo[0].get('GRAVER_CONTACT')+ "\n" +  "Begeleiders: " + featureInfo[0].get('BEGELEIDERS')])
         info.tooltip('fixTitle')
         info.tooltip('show');
+  } else if (featureInfo[1].get("name") == "RuimteLocLayer") {
+        info.attr('data-original-title', ["Koppelkast" + "\n" + "Adres: " + featureInfo[0].get('STRAATNAAM') + " " + featureInfo[0].get('HUISNUMMER') + "\n" + "Naam ruimte: " + featureInfo[0].get('NAAM_RUIMTE') + "\n" +  "Nummer behuizing: " + featureInfo[0].get('NUMMER_BEHUIZING') + "\n" +  "Gebouwtoepassing: " + featureInfo[0].get('GEBOUWTOEPASSING')])
+        info.tooltip('fixTitle')
+        info.tooltip('show');
   }
-  
-  
-  
   } else {
     info.tooltip('hide');
   }
