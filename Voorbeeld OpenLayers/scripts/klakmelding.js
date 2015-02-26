@@ -649,11 +649,11 @@ var vectorSourceLSOV = new ol.source.GeoJSON({
     url: 'data/MV_NRG_LS_OV.GeoJSON'
 });
 
-//LS Kabels inladen
+/*//LS Kabels inladen
 var vectorSourceKabels = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/MV_NRG_LS_KABELS.GeoJSON'
-});
+});*/
 
 /*//Werkorders alkmaar inladen
 var vectorSourceWerkorders = new ol.source.GeoJSON({
@@ -1330,6 +1330,7 @@ $(document).ready(function() {
             }
             if (ExtentArray.length != 0) {
                 selectedSourceKabels.addFeatures(FeatureArray);
+                selectedSourceAansl.addFeatures(AanslArray);
                 var pan = ol.animation.pan({
                     duration: 1000,
                     source: /** @type {ol.Coordinate} */ (view.getCenter())
@@ -1395,9 +1396,14 @@ $(document).ready(function() {
                 content += '<tr><td>' + 'Adres ruimte </td><td>' + MSRArray[0].get("STRAATNAAM") + " " + MSRArray[0].get("HUISNUMMER") + '</td></tr>';
                 content += '<tr><td>' + 'Sleutelkastje aanwezig? </td><td>' + MSRArray[0].get("SLEUTELKASTJE_") + '</td></tr>';
                 content += '</table>'}
-                KlakMeldingInfo.innerHTML = content;   
+                KlakMeldingInfo.innerHTML = content;
                 
-                //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
+                //knop om de getroffen klanten weer te geven in een lijst
+                $('#getroffenklanten').on("click", function() {
+                    LijstKlant();
+                });
+                
+ /*               //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                 var InfoGestAans = document.getElementById('example');
                 var content = "<table>"
                 content += "<thead><tr><td><b>Klantnaam</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
@@ -1423,7 +1429,7 @@ $(document).ready(function() {
                                     "retrieve":        true, 
                                     "order": [[ 2, "desc" ]],
                                     "columnDefs": [ { "width": "30%", "targets": 0 }]
-                        });
+                        });*/
                         //vervolgens de tabbar openen waar de gegevens instaan
                     sidebar.open("storingsgegevens")
             }
@@ -1651,62 +1657,44 @@ $(document).ready(function() {
         });
     
     $('#lijst-gest-aansl').on('click', function(){
-        var CompensatieWindow = window.open("", "CompensatieWindow", "width=800,height=500");
-        // de aansluitings features weer ophalen    
-            if(selectMouseClick) {
-                    var FeatureArray = [];
-                    for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
-                        //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-                        var features = selectMouseClick.getFeatures();
-                        var selectedFeature = features.item(k);
-                        var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-            //            window.alert(ARI);
-                        //Find corresponding name in other layer
-                       vectorSourceAansl.forEachFeature(function(featureAansl){
-                            if (featureAansl.get("ARI_ADRES") == ARI) {
-                                var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                                //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
-                                    vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                        if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
-                                            FeatureArray.push(featureAansl2);
-                                        }
-                                    });
-                                }
-                            }); 
-                        }
+        LijstKlant();
+    });
+    
+        function LijstKlant() {
+        var content = "";
+        var CompensatieWindow = window.open("", "CompensatieWindow", "width=900,height=500");
+        CompensatieWindow.document.innerHTML = '';   
+                    
+                    CompensatieWindow.document.write("<head><title>Lijst getroffen klanten</title><link href='styles/style.css' rel='stylesheet' type='text/css'><link href='http://openlayers.org/en/v3.1.1/css/ol.css' rel='stylesheet' type='text/css'><link href='bootstrap/dist/css/bootstrap.min.css' rel='stylesheet' type='text/css'><link href='bootstrap/dist/css/bootstrap-slider.css' rel='stylesheet' type='text/css'><link href='styles/jquery.dataTables.css' rel='stylesheet' type='text/css'><link href='styles/jquery.dataTables_themeroller.css' rel='stylesheet' type='text/css'><link href='styles/ol3-sidebar.min.css' rel='stylesheet' type='text/css'><link href='http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css' rel='stylesheet'></head>");
+                    
+                    CompensatieWindow.document.write("<table id='comptab' class='display' cellspacing='0' width=80%>");
+                    content += "<thead><tr><td><b>Klantnaam</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
 
-                   //Vervolgens informatie over geselecteerde aansluitingen weergeven
-//                    CompensatieWindow.document.write("<div id='compensatie_tabel'></div>");
-//                    var CompensatieTabel = CompensatieWindow.document.getElementById('compensatie_tabel');
-                    CompensatieWindow.document.write("<table id='comptab'>");
-                    var CompensatieTabel = CompensatieWindow.document.getElementById('comptab');
-                    var content = "<thead><tr><td><b>Starttijd storing (Klak)</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
-
-                    //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
-                    for(var i = 0; i < FeatureArray.length; i++){
-                    var TijdKlak = selectedFeature.get("Geregistreerd_op");
-                    var EAN = FeatureArray[i].get("EAN");
-                    var Functie = FeatureArray[i].get("FUNCTIE");    
-                    var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
-                    var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
-                    content += "<tr><td> " + TijdKlak + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                    //Nu voor alle aansluitingen, dit kan via de selectedsourceAansl waarin de aansluiting features in zijn opgeslagen
+                    for(var i = 0; i < selectedSourceAansl.getFeatures().length; i++){
+                    //var TijdKlak = selectedFeature.get("Geregistreerd_op");
+                    var Klantnaam = selectedSourceAansl.getFeatures()[i].get("VolledigeKlantnaam");
+                    var EAN = selectedSourceAansl.getFeatures()[i].get("EAN");
+                    var Functie = selectedSourceAansl.getFeatures()[i].get("FUNCTIE");    
+                    var AriAdres = selectedSourceAansl.getFeatures()[i].get("ARI_ADRES"); 
+                    var NomCapc = selectedSourceAansl.getFeatures()[i].get("NOMINALE_CAPACITEIT"); 
+                    content += "<tr><td> " + Klantnaam + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>"
                     }
                     content += "</table>"
+                    
+                    var CompensatieTabel = CompensatieWindow.document.getElementById('comptab');    
                     CompensatieTabel.innerHTML = content;
+                    
+                    CompensatieWindow.document.write("<script src='scripts/jquery-2.1.3.min.js'></scr" + "ipt></script><script src='scripts/jquery.dataTables.js'></scr" + "ipt><script src='scripts/jquery.dataTables.min.js'></scr" + "ipt>");
+        
 
         //hoe verwijs ik hier naar de tabel die in het nieuw geopende window start?
-//                    CompensatieWindow.document.getElementById('#comptab').DataTable( {
-                    CompensatieTabel.DataTable( {
+                    CompensatieWindow.document.write("<script> $('#comptab').DataTable( {'paging': false, 'retrieve': true });</script>" );
+                   
+        };
 
-                                "paging":         false,
-                                "retrieve":        true, 
-                                "order": [[ 2, "desc" ]]
-                                }); 
-                }else {
-                 window.alert("You have not selected anything");
-                }
-        });
-    
+
+    //zoeken van een adres
     $("#zoekadres").on('click', function() {
                        ZoekAdres();
     });
