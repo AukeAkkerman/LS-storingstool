@@ -452,6 +452,23 @@ var styleFunctionKLIC = function(feature, resolution) {
 };
 
 
+/*// Werkorder style
+var stylesWerkorder = {
+  'Polygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'rgba(250,165,0,0.6)',
+      lineDash: [4],
+      width: 1
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(250,80,0,0.4)'
+    })
+  })]
+};
+var styleFunctionWerkorder = function(feature, resolution) {
+    return stylesWerkorder[feature.getGeometry().getType()]; 
+};*/
+
 /////////////////////////////
 //Lagen
 /////////////////////////////
@@ -586,7 +603,7 @@ var vectorSourceLSMof = new ol.source.GeoJSON({
 var vectorSourceKLIC = new ol.source.GeoJSON({
     defaultProjection: projectionNL,
     projection: 'EPSG:3857',
-    url: 'data/KLIC_MELDINGEN.GeoJSON'
+    url: 'data/FCL_KLICMELDINGEN.GeoJSON'
 });
 
 //Selectielagen
@@ -632,6 +649,19 @@ var vectorSourceLSOV = new ol.source.GeoJSON({
     url: 'data/MV_NRG_LS_OV.GeoJSON'
 });
 
+//LS Kabels inladen
+var vectorSourceKabels = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/MV_NRG_LS_KABELS.GeoJSON'
+});
+
+/*//Werkorders alkmaar inladen
+var vectorSourceWerkorders = new ol.source.GeoJSON({
+    projection: 'EPSG:3857',
+    url: 'data/WERKORDERS_ALKMAAR.GeoJSON'
+});*/
+
+
 //Projectie van Kaartlagen
 
 //Klakmeldingen projecteren
@@ -641,7 +671,14 @@ var KLAKLayer = new ol.layer.Vector({
     style: styleFunctionKLAK,
     name: 'KLAKLayer'
 });
-
+/*
+//Werkorders projecteren
+var WerkorderLayer = new ol.layer.Vector({
+    source: vectorSourceWerkorders,
+    projection: 'EPSG:4326',
+    style: stylesWerkorder,
+    name: 'WerkorderLayer'
+});*/
 
 //Klakmeldingen history projecteren
 var KLAKLayerHistory = new ol.layer.Vector({
@@ -667,7 +704,7 @@ var AanslLayer = new ol.layer.Vector({
     source: vectorSourceAansl,
     projection: 'EPSG:4326',
     style: styleFunction,
-    name: 'MofLayer',
+    name: 'AanslLayer',
     maxResolution: 2,
 
 });
@@ -678,7 +715,7 @@ var MofLayer = new ol.layer.Vector({
     projection: 'EPSG:4326',
     style: styleFunctionMof,
     name: 'MofLayer',
-    maxResolution: 2,
+    maxResolution: 1,
     visible: false
 });
 
@@ -717,7 +754,8 @@ var KLICLayer = new ol.layer.Vector({
     source: vectorSourceKLIC,
     projection: 'EPSG:4326',
     style: styleFunctionKLIC,
-    name: 'KLICLayer'
+    name: 'KLICLayer',
+    visible: false
 });
 
 
@@ -767,7 +805,7 @@ var raster = new ol.layer.Tile({
 
 var map = new ol.Map({
     target: 'map',
-    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, liveKLAKLayer, KLAKLayer, KabelLayerMS, MSRLayer, LSOVLayer, KLICLayer, RuimteLocLayer, MofLayer,   selectedLayerAansl, selectedLayerKabels],
+    layers: [raster, PC4Layer, KabelLayer, AanslLayer, KLAKLayerHistory, liveKLAKLayer, KLAKLayer, KabelLayerMS, MSRLayer, LSOVLayer, KLICLayer, RuimteLocLayer, MofLayer, selectedLayerAansl, selectedLayerKabels],
     view: view,
     controls: ol.control.defaults({
     attributionOptions: /** @type {olx.control.AttributionOptions} */ ({
@@ -833,11 +871,21 @@ var displayFeatureInfo_MouseOver = function(pixel) {
         info.tooltip('show');
   } else if (featureInfo[1].get("name") == "KabelLayerMS") {
         info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
+        info.tooltip('fixTitle')
+        info.tooltip('show');
   } else if (featureInfo[1].get("name") == "liveKLAKLayer") {
         info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  }} else {
+  } else if (featureInfo[1].get("name") == "KLICLayer") {
+        info.attr('data-original-title', ["KLIC Melding" + "\n" + "Startdatum: " + featureInfo[0].get('DATUMAANVANGWERKZAAMHEDEN') + "\n" + "Einddatum: " + featureInfo[0].get('DATUMEINDWERKZAAMHEDEN') + "\n" +  "Opdrachtgever telnr: " + featureInfo[0].get('OPDRGVR_TELNR') + "\n" +  "Graver: " + featureInfo[0].get('GRAVER_CONTACT')+ "\n" +  "Begeleiders: " + featureInfo[0].get('BEGELEIDERS')])
+        info.tooltip('fixTitle')
+        info.tooltip('show');
+  }
+  
+  
+  
+  } else {
     info.tooltip('hide');
   }
 };
@@ -869,7 +917,7 @@ map.addInteraction(selectMouseClick);
     //$('#example').dataTable().fnDestroy();  voor het verwijderen van de DataTabel look, dit werkt nog niet optimaal
 
 //hiden van LS MOffen layer
-    MofLayer.setVisible(!MofLayer.getVisible()); 
+    MofLayer.setVisible(false); 
      
     //Deze onderstaande functie moet anders! De overlay zelf moet worden verwijderd en niet puur en alleen op de map, anders krijgen we een wildgroei aan overlays!
     for(var i=0; i < map.getOverlays().getLength() ; i++){
@@ -1335,6 +1383,7 @@ $(document).ready(function() {
                 content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';    
                 content += "</table>"
                 content += "<br>"
+                if (MSRArray.length >= 1) {
                 content += "<b>Middenspanningsruimte</b>"
                 content += "<table>"
                 content += '<tr><td>' + 'Ruimtenummer </td><td>' + MSRArray[0].get("NUMMER_BEHUIZING") + '</td></tr>';
@@ -1344,22 +1393,22 @@ $(document).ready(function() {
                 content += '<tr><td>' + 'Eigenaar </td><td>' + MSRArray[0].get("EIGENAAR") + '</td></tr>';
                 content += '<tr><td>' + 'Adres ruimte </td><td>' + MSRArray[0].get("STRAATNAAM") + " " + MSRArray[0].get("HUISNUMMER") + '</td></tr>';
                 content += '<tr><td>' + 'Sleutelkastje aanwezig? </td><td>' + MSRArray[0].get("SLEUTELKASTJE_") + '</td></tr>';
-                content += '</table>'
+                content += '</table>'}
                 KlakMeldingInfo.innerHTML = content;   
                 
                 //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                 var InfoGestAans = document.getElementById('example');
                 var content = "<table>"
-                content += "<thead><tr><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
+                content += "<thead><tr><td><b>Klantnaam</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
                     
                 //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
                 for(var i = 0; i < AanslArray.length; i++){
-                var EAN = AanslArray[i].get("EAN");
+                var Klantnaam = AanslArray[i].get("VolledigeKlantnaam");
                 var Functie = AanslArray[i].get("FUNCTIE");    
                 var AriAdres = AanslArray[i].get("ARI_ADRES"); 
                 var NomCapc = AanslArray[i].get("NOMINALE_CAPACITEIT"); 
    
-                content += "<tr><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                content += "<tr><td> " + Klantnaam + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
                 }
                 content += "</table>"
                 content += "<a href='#' class='export' id='export'>Export Table data into Excel</a>"
