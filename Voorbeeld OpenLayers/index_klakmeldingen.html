@@ -30,7 +30,7 @@
 </head>
 <body>
     <div class="container-fluid">
-    <div class="row">
+    <div class="row"  height="100hv">
     <a class="navbar-brand" href="#">TSC LS-storingstool</a>
     <div class="collapse navbar-collapse bs-example-js-navbar-collapse">
             <ul class="nav navbar-nav">
@@ -184,8 +184,8 @@
             <!-- Tab panes -->
             <div class="sidebar-content active">
                 <div class="sidebar-pane" id="ToggleLagen">
+                    <header1>Zichtbare Opties</header1>
                     <input type="checkbox" id="toggle-info-box" class="switch" value="check" />
-                    <h1>Zichtbare Opties</h1>
                     <label for="toggle-info-box">Info Box boven Assets</label><br><br>
                     
                     <b>toon storingen vanaf <br></b><span id="ex6SliderVal1">31 dagen geleden</span> tot <span id="ex6SliderVal2">vandaag</span> <br> 
@@ -194,14 +194,14 @@
                     </div>
                 </div>
 
-                <div class="sidebar-pane" id="storingsgegevens"><h1>Geselecteerde Klanten</h1>
-                <table id="KlakInfo" width=inherit></table><br><br>
-                <button class="btn btn-default" type="button" id="getroffenklanten">Toon getroffen klanten</button> 
-                <table class="display" cellspacing="0" id="example" width="50%"></table>
+                <div class="sidebar-pane" id="storingsgegevens"><header1>Geselecteerde Klanten</header1>
+                    <table id="KlakInfo" width=inherit></table><br><br>
+                    <div width="100%" id="examplediv">
+                        <table class="display compact dataTable" id="example"></table>
+                    </div>
                 </div>
-                <div id="example" class="display compact" cellspacing="0" width="60%">
-                </div>
-                <div class="sidebar-pane" id="legenda"><h1>Legenda</h1>
+                
+                <div class="sidebar-pane" id="legenda"><header1>Legenda</header1>
                     <img src="images/LegendaOL/Dia1.PNG" alt="Legenda" width="500" height="375">
                 </div>
             </div>
