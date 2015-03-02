@@ -120,7 +120,7 @@ projectionNL.setExtent([646.36, 308975.28, 276050.82, 636456.31]);
 
 var view = new ol.View({
     center: Alkmaar,
-    zoom: 17,
+    zoom: 11,
     projection: projection
 });
 //algemene definitie van de style voor tweets
@@ -508,7 +508,8 @@ var styleFunctionWerkorder = function(feature, resolution) {
 //Klakmeldingen inladen
 var vectorSourceKLAK = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
-    url: 'data/KLAK.GeoJSON'
+    defaultProjection: 'EPSG:28992',
+    url: 'data/KLAK_scenarios.GeoJSON'
 });
 
 //Klakmeldingen history 2014 inladen
@@ -905,8 +906,8 @@ var PC4Layer = new ol.layer.Vector({
     projection: 'EPSG:4326',
     style: styleFunctionPC4,
     name: 'PC4_gebieden',
-    minResolution: 6,
-    visible: false
+    minResolution: 6
+
 });
 
 //LS OV projecteren
@@ -982,7 +983,7 @@ var displayFeatureInfo_MouseOver = function(pixel) {
 	if (!isCluster(featureInfo[0])) {
 		info.tooltip('hide')
 		if (featureInfo[1].get("name") == "KLAKLayer") {
-			info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klantnaam: " + featureInfo[0].get('Klant') + "\n" + "Straatnaam: " + featureInfo[0].get('STRAAT') + " " + featureInfo[0].get('NR') + "\n" +  "Ingevoerd door: " + featureInfo[0].get("Door")])
+			info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klantnaam: " + featureInfo[0].get('Klant') + "\n" + "Straatnaam: " + featureInfo[0].get('STRAAT') + " " + featureInfo[0].get('NR') + "\n" +  "Subklacht: " + featureInfo[0].get("Door")])
 			info.tooltip('fixTitle')
 			info.tooltip('show');
 		} else if (featureInfo[1].get("name") == "KLAKLayerHistory") {
