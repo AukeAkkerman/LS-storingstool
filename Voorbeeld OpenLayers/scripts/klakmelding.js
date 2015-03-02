@@ -484,22 +484,22 @@ var styleFunctionKLIC = function(feature, resolution) {
 };
 
 
-/*// Werkorder style
+// Werkorder style
 var stylesWerkorder = {
   'Polygon': [new ol.style.Style({
     stroke: new ol.style.Stroke({
       color: 'rgba(250,165,0,0.6)',
       lineDash: [4],
-      width: 1
+      width: 3
     }),
     fill: new ol.style.Fill({
-      color: 'rgba(250,80,0,0.4)'
+      color: 'rgba(250,165,0,0.6)'
     })
   })]
 };
 var styleFunctionWerkorder = function(feature, resolution) {
     return stylesWerkorder[feature.getGeometry().getType()]; 
-};*/
+};
 
 /////////////////////////////
 //Lagen
@@ -793,11 +793,11 @@ var vectorSourceKabels = new ol.source.GeoJSON({
     url: 'data/MV_NRG_LS_KABELS.GeoJSON'
 });*/
 
-/*//Werkorders alkmaar inladen
+//Werkorders alkmaar inladen
 var vectorSourceWerkorders = new ol.source.GeoJSON({
     projection: 'EPSG:3857',
     url: 'data/WERKORDERS_ALKMAAR.GeoJSON'
-});*/
+});
 
 
 //Projectie van Kaartlagen
@@ -809,14 +809,14 @@ var KLAKLayer = new ol.layer.Vector({
     style: styleFunctionKLAK,
     name: 'KLAKLayer'
 });
-/*
+
 //Werkorders projecteren
 var WerkorderLayer = new ol.layer.Vector({
     source: vectorSourceWerkorders,
     projection: 'EPSG:4326',
     style: stylesWerkorder,
     name: 'WerkorderLayer'
-});*/
+});
 
 /*
 //Klakmeldingen history projecteren
