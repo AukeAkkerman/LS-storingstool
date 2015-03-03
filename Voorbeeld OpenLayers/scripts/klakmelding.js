@@ -1115,16 +1115,61 @@ var displayFeatureInfo_MouseOver = function(pixel) {
             //KlakLayerHistory
             var features = featureInfo[0].get('features');
             var teksty = "";
+            
+            
+            var fvis = false;
+            var filteredsize = 0;
+
+            for (i = 0; i < features.length; ++i) 
+            {
+                var parts  = features[i].get('BEGIN_STORING');
+                var Klak_BEGIN_STORING = new Date(1995,1,1);
+
+                if (typeof parts !== "undefined")  
+                {
+                    parts = parts.split('-');
+                    if (parts.length > 2)
+                    {
+                        var year = parseInt("20"+parts[2]);
+                        var dt1  = parseInt(parts[0]);
+                        var mon1 = parseInt(parts[1]);
+                        Klak_BEGIN_STORING = new Date(year,mon1-1,dt1);
+                    }
+
+                }
+
+                var fromdate = addDays(new Date(2015,0,31),historyslidervalue[0]);
+                var todate = addDays(new Date(2015,0,31),historyslidervalue[1]);
+
+                if (Klak_BEGIN_STORING >= fromdate && Klak_BEGIN_STORING <= todate)
+                {
+                    fvis = true;
+                    filteredsize=filteredsize+1;
+                    
+                    teksty = teksty+ "KLAKMELDING" + (filteredsize) + "\n" +  "Klak nr: " + features[i].get('KLAK') + "\n" +  "BEGIN STORING: " + features[i].get('BEGIN_STORING') + "\n" + "Component: " + features[i].get('COMPONENT') + "\n" + "Oorzaak: " + features[i].get('OORZAAK') + "\n" + "Aantal aansl.: "+ features[i].get('AANT_AANSL') + "\n" + "Monteur: " + features[i].get("MONTEUR")  + "\n" + "\n";
+
+                }
+
+            }
+            
+            
+            /*
             for(var i = 0; i < features.length; i++) 
             {
-            // here you'll have access to your normal attributes:
-            //console.log(features[0][i].get('name'));
                 teksty = teksty+ "KLAKMELDING" + (i+1) + "\n" +  "Klak nr: " + features[i].get('KLAK') + "\n" +  "BEGIN STORING: " + features[i].get('BEGIN_STORING') + "\n" + "Component: " + features[i].get('COMPONENT') + "\n" + "Oorzaak: " + features[i].get('OORZAAK') + "\n" + "Aantal aansl.: "+ features[i].get('AANT_AANSL') + "\n" + "Monteur: " + features[i].get("MONTEUR")  + "\n" + "\n";
 
             }
+            */
+            if (fvis)
+            {
             info.attr('data-original-title', teksty);
             info.tooltip('fixTitle');
             info.tooltip('show');
+            }
+            else
+            {
+                info.tooltip('hide');
+            }
         }
         else
         {
