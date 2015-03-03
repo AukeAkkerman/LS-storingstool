@@ -485,21 +485,21 @@ var styleFunctionKLIC = function(feature, resolution) {
 
 
 // Werkorder style
-var stylesWerkorder = {
-  'Polygon': [new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: 'rgba(250,165,0,0.6)',
-      lineDash: [4],
-      width: 3
-    }),
-    fill: new ol.style.Fill({
-      color: 'rgba(250,165,0,0.6)'
-    })
-  })]
-};
-var styleFunctionWerkorder = function(feature, resolution) {
-    return stylesWerkorder[feature.getGeometry().getType()]; 
-};
+//var stylesWerkorder = {
+//  'Polygon': [new ol.style.Style({
+//    stroke: new ol.style.Stroke({
+//      color: 'rgba(250,165,0,0.6)',
+//      lineDash: [4],
+//      width: 3
+//    }),
+//    fill: new ol.style.Fill({
+//      color: 'rgba(250,165,0,0.6)'
+//    })
+//  })]
+//};
+//var styleFunctionWerkorder = function(feature, resolution) {
+//    return stylesWerkorder[feature.getGeometry().getType()]; 
+//};
 
 /////////////////////////////
 //Lagen
@@ -795,10 +795,10 @@ var vectorSourceKabels = new ol.source.GeoJSON({
 });*/
 
 //Werkorders alkmaar inladen
-var vectorSourceWerkorders = new ol.source.GeoJSON({
-    projection: 'EPSG:3857',
-    url: 'data/WERKORDERS_ALKMAAR.GeoJSON'
-});
+//var vectorSourceWerkorders = new ol.source.GeoJSON({
+//    projection: 'EPSG:3857',
+//    url: 'data/WERKORDERS_ALKMAAR.GeoJSON'
+//});
 
 
 //Projectie van Kaartlagen
@@ -812,12 +812,12 @@ var KLAKLayer = new ol.layer.Vector({
 });
 
 //Werkorders projecteren
-var WerkorderLayer = new ol.layer.Vector({
-    source: vectorSourceWerkorders,
-    projection: 'EPSG:4326',
-    style: stylesWerkorder,
-    name: 'WerkorderLayer'
-});
+//var WerkorderLayer = new ol.layer.Vector({
+//    source: vectorSourceWerkorders,
+//    projection: 'EPSG:4326',
+//    style: stylesWerkorder,
+//    name: 'WerkorderLayer'
+//});
 
 /*
 //Klakmeldingen history projecteren
