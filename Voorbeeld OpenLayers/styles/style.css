@@ -412,3 +412,10 @@ label {
     font-weight: 700;
 }
 
+header1 {
+display: block;
+font-size: 1.8em;
+margin-top: -0.3em;
+margin-bottom: -0.2em;
+font-weight: bold; }
+

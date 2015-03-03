@@ -60,23 +60,7 @@ function myTimer() {
         previoushistoryslidervalue=d;
         map.updateSize()
     }
-    currentzoomlevel=map.getView().getZoom();
-    if (currentzoomlevel>12)
-    {
-        currentclusterdistance=0;
-    }
-    else
-    {
-        if (currentzoomlevel<10)
-        {
-            currentclusterdistance=32;
-        }
-        else
-        {
-            currentclusterdistance=16;
-        }
-    }
-    
+    currentzoomlevel=map.getView().getZoom();    
 }
 
 function isCluster(feature) {
@@ -107,7 +91,6 @@ function eliminateDuplicates(arr) {
 var historyslidervalue=[-31,0];
 var previoushistoryslidervalue=[-31,0];
 var currentzoomlevel=100;
-var currentclusterdistance=10;
 
 var projection = ol.proj.get('EPSG:3857');
 
@@ -304,7 +287,7 @@ var styleFunctionPC4 = function(feature, resolution) {
 var stylesKLAK = {
     'Point': [new ol.style.Style({
         image: new ol.style.Icon(({
-            src: 'Klakmelding/telefoon.png'
+            src: 'images/phone-rood.png'
         }))
     })]
 };
@@ -318,7 +301,7 @@ var styleFunctionKLAK = function(feature, resolution) {
 var stylesKLAKHistory = {
     'Point': [new ol.style.Style({
         image: new ol.style.Icon(({
-            src: 'Klakmelding/telefoon_grijs.png'
+            src: 'images/phone-grijs.png'
         }))
     })]
 };
@@ -521,15 +504,15 @@ var vectorSourceKLAKHistory = new ol.source.GeoJSON({
 });
 
 var clusterSourceKLAKHistory = new ol.source.Cluster({
-  //distance: 3,
-    distance: currentclusterdistance,
+    distance: 24,
     source: vectorSourceKLAKHistory,
 });
 
 var styleCache = {};
 var KLAKLayerHistory = new ol.layer.Vector({
   visible: false,
-    name: KLAKLayerHistory,
+    name: 'KLAKLayerHistory',
+    opacity: .7,
   source: clusterSourceKLAKHistory,
   style: function(feature, resolution) {
     var size = feature.get('features').length;
@@ -580,7 +563,7 @@ var KLAKLayerHistory = new ol.layer.Vector({
                 if (!style) {
                     style = [new ol.style.Style({
                     image: new ol.style.Icon(({
-                    src: 'Klakmelding/telefoon_grijs.png'
+                    src: 'images/phone-grijs.png'
                     })),
                       /*
                     image: new ol.style.Circle({
@@ -595,6 +578,7 @@ var KLAKLayerHistory = new ol.layer.Vector({
                       */
                     text: new ol.style.Text({
                       text: filteredsize.toString(),
+                      offsetY: 6,
                       fill: new ol.style.Fill({
                         color: '#fff'
                       })
@@ -611,7 +595,7 @@ var KLAKLayerHistory = new ol.layer.Vector({
                  if (!style) {
                     style = [new ol.style.Style({
                     image: new ol.style.Icon(({
-                    src: 'Klakmelding/telefoon_grijs.png'
+                    src: 'images/phone-grijs.png'
                     }))
                   })];
                   styleCache[filteredsize] = style;
@@ -840,14 +824,52 @@ var KabelLayer = new ol.layer.Vector({
     maxResolution: 1
 });
 
+// Slimme LV aansluiting (slimme meter) style
+var stylesSM = [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({
+                color: 'rgba(30,200,100,0.6)'
+            }),
+            stroke: new ol.style.Stroke({color: 'green', width: 1})
+            }),
+            text: new ol.style.Text({
+              text: "i",
+              fill: new ol.style.Fill({
+                color: '#ff8'
+              })
+            })
+    })];
+
+//domme meter style
+var stylesDM = [new ol.style.Style({
+        image: new ol.style.Circle({
+            radius: 5,
+            fill: new ol.style.Fill({
+                color: 'rgba(30,200,100,0.6)'
+            }),
+            stroke: new ol.style.Stroke({color: 'green', width: 1})
+            })
+    })];
+
 //Aansluitingen projecteren
 var AanslLayer = new ol.layer.Vector({
     source: vectorSourceAansl,
     projection: 'EPSG:4326',
-    style: styleFunction,
+    //style: styleFunction,
     name: 'AanslLayer',
     maxResolution: 2,
-
+    
+    style: function(feature, resolution) {  
+        if (feature.get('SlimmeMeter')=='1')
+        {
+             return stylesSM;
+        }
+        else
+        {
+            return stylesDM;
+        }
+    }
 });
 
 //moffen projecteren
@@ -919,11 +941,64 @@ var LSOVLayer = new ol.layer.Vector({
     maxResolution: 2
 });
 
+
+var stylesLiveKLAKurgent = [new ol.style.Style({
+        image: new ol.style.Icon(({
+                    src: 'images/phone-rood.png'
+                    })),
+        zIndex: Infinity
+    })];
+
+var stylesLiveKLAKnieturgent = [new ol.style.Style({
+        image: new ol.style.Icon(({
+                    src: 'images/phone-geel.png'
+                    })),   
+    })];
+
+var stylesLiveKLAKGASurgent = [new ol.style.Style({
+        image: new ol.style.Icon(({
+                    src: 'images/gas-rood.png'
+                    })),
+        zIndex: Infinity
+    })];
+
+var stylesLiveKLAKGASnieturgent = [new ol.style.Style({
+        image: new ol.style.Icon(({
+                    src: 'images/gas-geel.png'
+                    })),   
+    })];
+
+
 //liveKLAK 
 var liveKLAKLayer = new ol.layer.Vector({
     source: vectorSourceliveKLAK,
-    style: styleFunctionKLAK,
-    name: "liveKLAKLayer"
+    name: "liveKLAKLayer",
+    //style: styleFunctionKLAK,
+    style: function(feature, resolution) {  
+        if (feature.get('Urgency')=='US')
+        {
+            if (feature.get('Type')=='Gas')
+            {
+                return stylesLiveKLAKGASurgent;
+            }
+            else
+            {
+                return stylesLiveKLAKurgent;
+            }
+        }
+        else
+        {
+            if (feature.get('Type')=='Gas')
+            {
+                return stylesLiveKLAKGASnieturgent;
+            }
+            else
+            {
+                return stylesLiveKLAKnieturgent;
+            }
+        }
+    }
+    
 });
 
 //Geselecteerde aansluitingen
@@ -980,17 +1055,17 @@ var displayFeatureInfo_MouseOver = function(pixel) {
     return [feature, layer];
   });
     if (featureInfo) {
-	if (!isCluster(featureInfo[0])) {
+	if (!featureInfo[0].get('features')) {
 		info.tooltip('hide')
 		if (featureInfo[1].get("name") == "KLAKLayer") {
 			info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klantnaam: " + featureInfo[0].get('Klant') + "\n" + "Straatnaam: " + featureInfo[0].get('STRAAT') + " " + featureInfo[0].get('NR') + "\n" +  "Subklacht: " + featureInfo[0].get("Door")])
 			info.tooltip('fixTitle')
 			info.tooltip('show');
-		} else if (featureInfo[1].get("name") == "KLAKLayerHistory") {
+		  } else if (featureInfo[1].get("name") == "KLAKLayerHistory") {
 			info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klak nr: " + featureInfo[0].get('KLAK') + "\n" + "Component: " + featureInfo[0].get('COMPONENT') + "\n" + "Oorzaak: " + featureInfo[0].get('OORZAAK') + "\n" + "Aantal aansl.: "+ featureInfo[0].get('AANT_AANSL') + "\n" + "Monteur: " + featureInfo[0].get("MONTEUR")])
 			info.tooltip('fixTitle')
 			info.tooltip('show');
-		} else if (featureInfo[1].get("name") == "AanslLayer") {
+		  } else if (featureInfo[1].get("name") == "AanslLayer") {
 			info.attr('data-original-title', ["AANSLUITING " + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
 			info.tooltip('fixTitle')
 			info.tooltip('show');
@@ -1010,52 +1085,56 @@ var displayFeatureInfo_MouseOver = function(pixel) {
         info.attr('data-original-title', ["MSR" + "\n" + "Nummer behuizing: " + featureInfo[0].get('NUMMER_BEHUIZING') + "\n" + "Aparte Looproute: " + featureInfo[0].get('LOOPROUTE_RIJROUTE') + "\n" +  "Straatnaam " + featureInfo[0].get('STRAATNAAM') + "\n" + "Sleutelkast?: " + featureInfo[0].get('SLEUTELKASTJE_')])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  } else if (featureInfo[1].get("name") == "KabelLayerMS") {
+        } else if (featureInfo[1].get("name") == "KabelLayerMS") {
         info.attr('data-original-title', ["MS Kabel" + "\n" + "MS Hoofdleiding: " + featureInfo[0].get('MS_HLD_ID') + "\n" + "Type Kabel: " + featureInfo[0].get('UITVOERING') + "\n" +  "Toelaatbare Stroom " + featureInfo[0].get('TOELAATBARE_STROOM') + "A"])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  } else if (featureInfo[1].get("name") == "liveKLAKLayer") {
+        } else if (featureInfo[1].get("name") == "liveKLAKLayer") {
         info.attr('data-original-title', ["KLAK nummer: " + featureInfo[0].get('Id') + "\n" + "Adres: " + featureInfo[0].get('Street') + " " + featureInfo[0].get('StreetNumber') + " " + featureInfo[0].get('StreetNumberAppendix') + "\n" + "Type storing: " + featureInfo[0].get('Type') + "\n" + "Klacht type: " + featureInfo[0].get('Complaint') + "\n" + "Subklacht: " + featureInfo[0].get('SubComplaint') + "\n" + "Status: " + featureInfo[0].get('Status') + "\n" + "Description: " +  featureInfo[0].get('Description')])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  } else if (featureInfo[1].get("name") == "KLICLayer") {
+        } else if (featureInfo[1].get("name") == "KLICLayer") {
         info.attr('data-original-title', ["KLIC Melding" + "\n" + "Startdatum: " + featureInfo[0].get('DATUMAANVANGWERKZAAMHEDEN') + "\n" + "Einddatum: " + featureInfo[0].get('DATUMEINDWERKZAAMHEDEN') + "\n" +  "Opdrachtgever telnr: " + featureInfo[0].get('OPDRGVR_TELNR') + "\n" +  "Graver: " + featureInfo[0].get('GRAVER_CONTACT')+ "\n" +  "Begeleiders: " + featureInfo[0].get('BEGELEIDERS')])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  } else if (featureInfo[1].get("name") == "RuimteLocLayer") {
+        } else if (featureInfo[1].get("name") == "RuimteLocLayer") {
         info.attr('data-original-title', ["Koppelkast" + "\n" + "Adres: " + featureInfo[0].get('STRAATNAAM') + " " + featureInfo[0].get('HUISNUMMER') + "\n" + "Naam ruimte: " + featureInfo[0].get('NAAM_RUIMTE') + "\n" +  "Nummer behuizing: " + featureInfo[0].get('NUMMER_BEHUIZING') + "\n" +  "Gebouwtoepassing: " + featureInfo[0].get('GEBOUWTOEPASSING')])
         info.tooltip('fixTitle')
         info.tooltip('show');
-  }	  else  {
-                info.tooltip('hide');
-            }} else
-      
-            // is a cluster, so loop through all the underlying features
-            if (true) //(featureInfo[1].get("name") == "KLAKLayerHistory") 
+        }	  
+        else  
+        {
+            info.tooltip('hide');
+        }
+    }
+    else 
+    {
+        // is a cluster, so loop through all the underlying features
+        if (featureInfo[1].get("name") == "KLAKLayerHistory") //(featureInfo[1].get("name") == "KLAKLayerHistory") 
+        {
+            //KlakLayerHistory
+            var features = featureInfo[0].get('features');
+            var teksty = "";
+            for(var i = 0; i < features.length; i++) 
             {
-                info.tooltip('hide')
-                //KlakLayerHistory
-                var features = featureInfo[0].get('features');
-                var teksty = "";
-                for(var i = 0; i < features.length; i++) 
-                {
-                // here you'll have access to your normal attributes:
-                //console.log(features[0][i].get('name'));
-                    teksty = teksty+ "KLAKMELDING" + (i+1) + "\n" +  "Klak nr: " + features[i].get('KLAK') + "\n" +  "BEGIN STORING: " + features[i].get('BEGIN_STORING') + "\n" + "Component: " + features[i].get('COMPONENT') + "\n" + "Oorzaak: " + features[i].get('OORZAAK') + "\n" + "Aantal aansl.: "+ features[i].get('AANT_AANSL') + "\n" + "Monteur: " + features[i].get("MONTEUR")  + "\n" + "\n";
-                    
-                }
-                info.attr('data-original-title', teksty);
-                info.tooltip('fixTitle');
-                info.tooltip('show');
+            // here you'll have access to your normal attributes:
+            //console.log(features[0][i].get('name'));
+                teksty = teksty+ "KLAKMELDING" + (i+1) + "\n" +  "Klak nr: " + features[i].get('KLAK') + "\n" +  "BEGIN STORING: " + features[i].get('BEGIN_STORING') + "\n" + "Component: " + features[i].get('COMPONENT') + "\n" + "Oorzaak: " + features[i].get('OORZAAK') + "\n" + "Aantal aansl.: "+ features[i].get('AANT_AANSL') + "\n" + "Monteur: " + features[i].get("MONTEUR")  + "\n" + "\n";
+
             }
-            else
-            {
-                info.tooltip('hide');
-            }
-        } else
-            {
-                info.tooltip('hide');
-            }
+            info.attr('data-original-title', teksty);
+            info.tooltip('fixTitle');
+            info.tooltip('show');
+        }
+        else
+        {
+            info.tooltip('hide');
+        }
+    }
+    }
+    else {
+    info.tooltip('hide');
+    }
 };
 
 
@@ -1564,48 +1643,54 @@ $(document).ready(function() {
                 content += '<tr><td>' + 'Adres ruimte </td><td>' + MSRArray[0].get("STRAATNAAM") + " " + MSRArray[0].get("HUISNUMMER") + '</td></tr>';
                 content += '<tr><td>' + 'Sleutelkastje aanwezig? </td><td>' + MSRArray[0].get("SLEUTELKASTJE_") + '</td></tr>';
                 content += '</table>'}
-                KlakMeldingInfo.innerHTML = content;
+                KlakMeldingInfo.innerHTML = content;   
                 
-                //knop om de getroffen klanten weer te geven in een lijst
-                $('#getroffenklanten').on("click", function() {
-                    LijstKlant();
-                });
-                
- /*               //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
+                //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                 var InfoGestAans = document.getElementById('example');
-                var content = "<table>"
-                content += "<thead><tr><td><b>Klantnaam</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
+                var content = "<table class='display compact dataTable' id='example'>";
+                content += "<thead><tr><th><b>EAN</b></th><th><b>Functie</b></th><th><b>ARI adres</b></th><th><b>Nominale capaciteit</b></th></tr></thead> ";
                     
                 //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
                 for(var i = 0; i < AanslArray.length; i++){
-                var Klantnaam = AanslArray[i].get("VolledigeKlantnaam");
+                var EAN = AanslArray[i].get("EAN");
                 var Functie = AanslArray[i].get("FUNCTIE");    
                 var AriAdres = AanslArray[i].get("ARI_ADRES"); 
                 var NomCapc = AanslArray[i].get("NOMINALE_CAPACITEIT"); 
    
-                content += "<tr><td> " + Klantnaam + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                content += "<tr><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
                 }
                 content += "</table>"
                 content += "<a href='#' class='export' id='export'>Export Table data into Excel</a>"
+                content += "<br><br><br><br>"
                 InfoGestAans.innerHTML = content;
                 
-                //opmaak voor de lijst met gestoorde aansluitingen      
-                        $('#example').DataTable( {
+                ttable=$('#example').DataTable( {
+                                    "dom": 'lrpt',
                                     "scrollCollapse": true,
-                                    "autoWidth":      false,
+                                    "bAutoWidth": true,
+                                    "AutoWidth": true,
+                                    "bDestroy": true,
                                     "paging":         true,
-                                    "retrieve":        true, 
+                                    "retrieve":        false, 
+                                    "bJQueryUI": false,
                                     "order": [[ 2, "desc" ]],
-                                    "columnDefs": [ { "width": "30%", "targets": 0 }]
-                        });*/
-                        //vervolgens de tabbar openen waar de gegevens instaan
-                    sidebar.open("storingsgegevens")
+                                    "fnInitComplete": function() {
+                                        $("#example").css("width","100%");
+                                    }
+                    });    
+                
+                sidebar.open("storingsgegevens")
+                
+                /*
+                setTimeout(function(){
+                    ttable.columns.resize();
+                }, 250);
+                */
             }
         } else {
          window.alert("U heeft niets geselecteerd");
         }
     });
-
 
 //Aukes versie van de aansluitingen op de kabel en analyse van de KLAK meldingen aan de kabel
    
