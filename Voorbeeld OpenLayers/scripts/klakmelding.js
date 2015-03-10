@@ -484,6 +484,7 @@ var styleFunctionWerkorder = function(feature, resolution) {
     return stylesWerkorder[feature.getGeometry().getType()]; 
 };
 
+
 /////////////////////////////
 //Lagen
 /////////////////////////////
@@ -1737,158 +1738,7 @@ $(document).ready(function() {
         }
     });
 
-//Aukes versie van de aansluitingen op de kabel en analyse van de KLAK meldingen aan de kabel
-   
-/*    $('#toon-aansl-aan-kabel').on('click', function(){
-        
-        if(selectMouseClick) {
-            var ExtentArray = [];
-            var FeatureArray = [];
-            var SMArray = [];
-            var SMOffArray = [];
-            var KlakArray = []; 
-            var MSRArray = [];
-            for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
-                //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
-                var features = selectMouseClick.getFeatures();
-                var selectedFeature = features.item(k);
-                var ARI = selectedFeature.get("PC") + selectedFeature.get("NR") + " ";
-    //            window.alert(ARI);
-                //Find corresponding name in other layer
-               vectorSourceAansl.forEachFeature(function(featureAansl){
-                    if (featureAansl.get("ARI_ADRES") == ARI) {
-                        var HLD_tevinden = featureAansl.get("HOOFDLEIDING");
-                        //Onderstaande kan waarschijnlijk slimmer omdat ik nu 2 keer dezelfde loop doorloop eigenlijk, nog niet over nagedacht hoe dit wel moet
-                            vectorSourceAansl.forEachFeature(function(featureAansl2){
-                                if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden){
-                                    ExtentArray.push(featureAansl2.getGeometry().getExtent());
-                                    FeatureArray.push(featureAansl2);
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1){
-                                    SMArray.push(featureAansl2);}
-                                    if (featureAansl2.get("HOOFDLEIDING") == HLD_tevinden && featureAansl2.get("SlimmeMeter") == 1 &&               featureAansl2.get("PingTerug") != 1) {
-                                    SMOffArray.push(featureAansl2);}                                    
 
-                                }
-                            });
-                        }
-                    }); 
-                
-                }
-                if (ExtentArray.length != 0) {
-                selectedSourceAansl.addFeatures(FeatureArray);
-                var pan = ol.animation.pan({
-                    duration: 1000,
-                    source:  @type {ol.Coordinate} / (view.getCenter()) // hier de sterretjes weer toevoegen als deze functie weer ingeschakeld wordt
-                });
-                map.beforeRender(pan);
-                var NewExtent = maxExtent(ExtentArray);
-                    //Aangezien we een tabel gaan toevoegen wil ik de extent graag wat groter maken
-                    for(var k=0; k<NewExtent.length; k++) {
-                        if(k == 0 || k == 1){
-                            NewExtent[k] *= (1/1.000002);
-                        } else {
-                            NewExtent[k] *= 1.000002;
-                        }
-                    }
-                map.getView().fitExtent(NewExtent, map.getSize());
-// de onderstaande twee blokken worden pas interessant als we de losse belletjes kunnen projecteren op de kaart. Nu nog niet relevant dus even uit geschakeld
-                //Aantal KLAK meldingen op hoofdleiding
-                var KlakArray = [];
-                for (var j=0; j< FeatureArray.length; j++) {
-                var features = FeatureArray;
-                var Aansluiting = features[j];
-                var ARI = Aansluiting.get("ARI_ADRES");
-            
-                vectorSourceKLAK.forEachFeature(function(featureKlak){
-                if (featureKlak.get("PC") + featureKlak.get("NR") + " " == ARI) {
-                    KlakArray.push(featureKlak);
-                }
-                });
-                 }
-                    
-                //Percentage kans op LS storing berekenen
-             
-                if (KlakArray.length > 1){
-                var Kans = 0.95;
-                } else if(KlakArray.length == 1 && SMArray.length == 0){
-                    Kans = 0.5;
-                } else if(KlakArray.length == 1 && SMOffArray.length != 0){
-                    Kans = 0.5 + 0.5*(1-0.25/SMOffArray.length);
-                } else {
-                    Kans = 0.5;
-                }
-                    
-                // MSR informatie erbij zoeken
-                    
-                var BehuizingsNR = FeatureArray[1].get("NUMMER_BEHUIZING");
-                vectorSourceMSR.forEachFeature(function(featureMSR){
-                if (featureMSR.get("NUMMER_BEHUIZING") == BehuizingsNR){
-                    MSRArray.push(featureMSR);
-                }
-                });
-                    
-                    
-                //Vervolgens informatie toevoegen op basis van de gegevens
-                var KlakMeldingInfo = document.getElementById('KlakInfo');
-                var content = "<b>Storings analyse</b>"
-                content += "<table>"
-                content += '<tr><td>' + 'Aantal KLAK meldingen op kabel </td><td>' +  KlakArray.length + '</td></tr>';
-                content += '<tr><td>' + 'Aantal Aansluitingen </td><td>' +  ExtentArray.length + '</td></tr>';
-                content += '<tr><td>' + 'Aantal met slimme meter </td><td> ' +  SMArray.length + '</td></tr>';
-                content += '<tr><td>' + 'Waarvan offline </td><td> ' +  SMOffArray.length + '</td></tr>';
-                content += '<tr><td>' + 'kans op LS storing </td><td> ' +  Kans*100 + ' % </td></tr>';    
-                content += '<tr><td>' + 'Hoofdleidingnummer </td><td>' +  FeatureArray[0].get("HOOFDLEIDING") + '</td></tr>';    
-                content += "</table>"
-                content += "<br>"
-                content += "<b>Middenspanningsruimte</b>"
-                content += "<table>"
-                content += '<tr><td>' + 'Ruimtenummer </td><td>' + BehuizingsNR + '</td></tr>';
-                content += '<tr><td>' + 'Lokale naam </td><td>' + MSRArray[0].get("LOKALE_NAAM") + '</td></tr>';
-                content += '<tr><td>' + 'Looproute/rijroute </td><td>' + MSRArray[0].get("LOOPROUTE_RIJROUTE") + '</td></tr>';
-                content += '<tr><td>' + 'Gebouw toepassing </td><td>' + MSRArray[0].get("GEBOUWTOEPASSING") + '</td></tr>';
-                content += '<tr><td>' + 'Eigenaar </td><td>' + MSRArray[0].get("EIGENAAR") + '</td></tr>';
-                content += '<tr><td>' + 'Adres ruimte </td><td>' + MSRArray[0].get("STRAATNAAM") + " " + MSRArray[0].get("HUISNUMMER") + '</td></tr>';
-                content += '<tr><td>' + 'Sleutelkastje aanwezig? </td><td>' + MSRArray[0].get("SLEUTELKASTJE_") + '</td></tr>';
-                content += '</table>'
-                KlakMeldingInfo.innerHTML = content;   
-                
-                
-                    
-                
-                //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
-                var InfoGestAans = document.getElementById('example');
-                var content = "<table>"
-                content += "<thead><tr><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead> "
-                    
-                //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
-                for(var i = 0; i < FeatureArray.length; i++){
-                var EAN = FeatureArray[i].get("EAN");
-                var Functie = FeatureArray[i].get("FUNCTIE");    
-                var AriAdres = FeatureArray[i].get("ARI_ADRES"); 
-                var NomCapc = FeatureArray[i].get("NOMINALE_CAPACITEIT"); 
-                content += "<tr><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
-                }
-                content += "</table>"
-                content += "<a href='#' class='export' id='export'>Export Table data into Excel</a>"
-                InfoGestAans.innerHTML = content;
-                
-                //opmaak voor de lijst met gestoorde aansluitingen      
-                        $('#example').DataTable( {
-                                    "scrollCollapse": true,
-                                    "autoWidth":      false,
-                                    "paging":         true,
-                                    "retrieve":        true, 
-                                    "order": [[ 2, "desc" ]],
-                                    "columnDefs": [ { "width": "30%", "targets": 0 }]
-                        });
-                        //vervolgens de tabbar openen waar de gegevens instaan
-                    sidebar.open("storingsgegevens")
-                        } }else {
-         window.alert("You have not selected anything");
-        }
-
-});
-    */
     $('#Help').on('click', function(){
         window.alert("Help is on it's way! Mis je wat? Vul dan de vragenlijst in of mail je opmerking naar tim.lucas@alliander.com of auke.akkerman@alliander.com");
         });
@@ -2087,26 +1937,6 @@ $(document).ready(function() {
     });
 
 }); 
-
-//download PNG module werkt nog niet
-//var exportPNGElement = document.getElementById('export-png');
-//
-//if ('download' in exportPNGElement) {
-//  exportPNGElement.addEventListener('click', function(e) {
-//    map.once('postcompose', function(event) {
-//      var canvas = event.context.canvas;
-//      exportPNGElement.href = canvas.toDataURL('image/png');
-//    });
-//    map.renderSync();
-//  }, false);
-//} else {
-//    alert('werkt niet gek')
-// /* var info = document.getElementById('no-download');
-//  *
-//   * display error message
-//   
-//  info.style.display = '';*/
-//}
 
 
 
