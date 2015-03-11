@@ -1166,8 +1166,12 @@ var displayFeatureInfo_MouseOver = function(pixel) {
                 info.attr('data-original-title', ["KLAKMELDING" + "\n" +  "Klak nr: " + featureInfo[0].get('KLAK') + "\n" + "Component: " + featureInfo[0].get('COMPONENT') + "\n" + "Oorzaak: " + featureInfo[0].get('OORZAAK') + "\n" + "Aantal aansl.: "+ featureInfo[0].get('AANT_AANSL') + "\n" + "Monteur: " + featureInfo[0].get("MONTEUR")])
                 info.tooltip('fixTitle')
                 info.tooltip('show');
-              } else if (featureInfo[1].get("name") == "AanslLayer") {
-                info.attr('data-original-title', ["AANSLUITING " + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
+              } else if (featureInfo[1].get("name") == "AanslLayer" && featureInfo[0].get("ZP nummer") == undefined) {
+                info.attr('data-original-title', ["AANSLUITING " + "\n" + "Klantnaam: " + featureInfo[0].get('VolledigeKlantnaam') + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Nominale Capaciteit " + featureInfo[0].get('NOMINALE_CAPACITEIT') + "\n" + "Slimme Meter?: " + featureInfo[0].get('SlimmeMeter')])
+                info.tooltip('fixTitle')
+                info.tooltip('show');
+            } else if (featureInfo[1].get("name") == "AanslLayer" && featureInfo[0].get("ZP nummer") !== undefined) {
+                info.attr('data-original-title', ["AANSLUITING " + "\n" + "Klantnaam: " + featureInfo[0].get('VolledigeKlantnaam') + "\n" + "EAN Code: " + featureInfo[0].get('EAN') + "\n" + "Adres: " + featureInfo[0].get('ARI_ADRES') + "\n" +  "Account manager " + featureInfo[0].get('Accountmanager') + "\n" + "Tel. nr Accountmgr: " + featureInfo[0].get('Telnr accountmgr')])
                 info.tooltip('fixTitle')
                 info.tooltip('show');
             } else if (featureInfo[1].get("name") == "KabelLayer") {
@@ -1838,16 +1842,18 @@ $(document).ready(function() {
                 //Module om een lijst met gestoorde aansluitingen te creeëren en te exporteren
                 var InfoGestAans = document.getElementById('example');
                 var content = "<table class='display compact dataTable' id='example'>";
-                content += "<thead><tr><th><b>EAN</b></th><th><b>Functie</b></th><th><b>ARI adres</b></th><th><b>Nominale capaciteit</b></th></tr></thead> ";
+                content += "<thead><tr><th><b>Klantnaam</b></th><th><b>Meternummer</b></th><th><b>ARI adres</b></th><th><b>Nominale capaciteit</b></th></tr></thead> ";
                     
-                //Nu voor alle aansluitingen, dit kan via de FeatureArray waarin de aansluiting features in zijn opgeslagen
+                //Nu voor alle aansluitingen, dit kan via de AanslArray waarin de aansluiting features in zijn opgeslagen
                 for(var i = 0; i < AanslArray.length; i++){
                 var EAN = AanslArray[i].get("EAN");
+                var Klantnaam = AanslArray[i].get("VolledigeKlantnaam");
+                var MeterNummer = AanslArray[i].get("Meternummer");
                 var Functie = AanslArray[i].get("FUNCTIE");    
                 var AriAdres = AanslArray[i].get("ARI_ADRES"); 
                 var NomCapc = AanslArray[i].get("NOMINALE_CAPACITEIT"); 
    
-                content += "<tr><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
+                content += "<tr><td> " + Klantnaam + " </td><td> " + MeterNummer + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>";
                 }
                 content += "</table>"
                 content += "<a href='#' class='export' id='export'>Export Table data into Excel</a>"
@@ -1954,23 +1960,24 @@ $(document).ready(function() {
     
         function LijstKlant() {
         var content = "";
-        var CompensatieWindow = window.open("", "CompensatieWindow", "width=900,height=500");
+        var CompensatieWindow = window.open("", "CompensatieWindow", "width=1000,height=600");
         CompensatieWindow.document.innerHTML = '';   
                     
                     CompensatieWindow.document.write("<head><title>Lijst getroffen klanten</title><link href='styles/style.css' rel='stylesheet' type='text/css'><link href='http://openlayers.org/en/v3.1.1/css/ol.css' rel='stylesheet' type='text/css'><link href='bootstrap/dist/css/bootstrap.min.css' rel='stylesheet' type='text/css'><link href='bootstrap/dist/css/bootstrap-slider.css' rel='stylesheet' type='text/css'><link href='styles/jquery.dataTables.css' rel='stylesheet' type='text/css'><link href='styles/jquery.dataTables_themeroller.css' rel='stylesheet' type='text/css'><link href='styles/ol3-sidebar.min.css' rel='stylesheet' type='text/css'><link href='http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css' rel='stylesheet'></head>");
                     
                     CompensatieWindow.document.write("<table id='comptab' class='display' cellspacing='0' width=80%>");
-                    content += "<thead><tr><td><b>Klantnaam</td><td><b>EAN</td><td><b>Functie</td><td><b>ARI adres</td><td><b>Nominale capaciteit</b></td></tr></thead>"
+                    content += "<thead><tr><td><b>Klantnaam</b></td><td><b>EAN</b></td><td><b>Meternummer</b></td><td><b>Functie</b></td><td><b>ARI adres</b></td><td><b>Nominale capaciteit</b></td></tr></thead>"
 
                     //Nu voor alle aansluitingen, dit kan via de selectedsourceAansl waarin de aansluiting features in zijn opgeslagen
                     for(var i = 0; i < selectedSourceAansl.getFeatures().length; i++){
                     //var TijdKlak = selectedFeature.get("Geregistreerd_op");
                     var Klantnaam = selectedSourceAansl.getFeatures()[i].get("VolledigeKlantnaam");
                     var EAN = selectedSourceAansl.getFeatures()[i].get("EAN");
+                    var MeterNummer = selectedSourceAansl.getFeatures()[i].get("Meternummer");    
                     var Functie = selectedSourceAansl.getFeatures()[i].get("FUNCTIE");    
                     var AriAdres = selectedSourceAansl.getFeatures()[i].get("ARI_ADRES"); 
                     var NomCapc = selectedSourceAansl.getFeatures()[i].get("NOMINALE_CAPACITEIT"); 
-                    content += "<tr><td> " + Klantnaam + " </td><td> " + EAN + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>"
+                    content += "<tr><td> " + Klantnaam + " </td><td> " + EAN + " </td><td> " + MeterNummer + " </td><td> " + Functie + " </td><td> " + AriAdres + " </td><td> " +  NomCapc + " </td></tr>"
                     }
                     content += "</table>"
                     
@@ -2005,6 +2012,7 @@ $(document).ready(function() {
         if(selectMouseClick) {
             var ExtentArray = [];
             var FeatureArray = [];
+            var AanslArray = [];
             for (var k=0; k< selectMouseClick.getFeatures().getLength(); k++) {
                 //Haal de naam op van het ARI adres in vectorSourceKLAK (dit is wat geselecteerd is)
                 var features = selectMouseClick.getFeatures();
@@ -2016,6 +2024,7 @@ $(document).ready(function() {
                     if (featureAansl.get("NUMMER_BEHUIZING") == Behuizingsnummer) {
                             ExtentArray.push(featureAansl.getGeometry().getExtent());
                             FeatureArray.push(featureAansl);
+                            AanslArray.push(featureAansl);
                     }
                });
             }
@@ -2054,6 +2063,10 @@ $(document).ready(function() {
                 map.getView().fitExtent(NewExtent, map.getSize());
         }} else {  window.alert("You have not selected anything");
     }
+        
+    //Nu voor alle aansluitingen, dit kan via de AanslArray waarin de aansluiting features in zijn opgeslagen
+    var InfoGestAans = document.getElementById('example');            
+           InfoGestAans.innerHTML = "";
     
     sidebar.open("storingsgegevens")
         
